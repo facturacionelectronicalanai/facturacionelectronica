@@ -4966,6 +4966,11 @@ document.addEventListener('change', async ev => {
     '.la-badge{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--bad);color:#fff;font:600 .75rem/22px var(--font);text-align:center}',
     '.la-ojos{transform-box:fill-box;transform-origin:center;animation:la-parpadeo 4s steps(1,end) infinite}',
     '@keyframes la-parpadeo{0%,93%{transform:scaleY(1)}94%,97%{transform:scaleY(.2)}98%,100%{transform:scaleY(1)}}',
+    '.la-tip{position:fixed;z-index:61;width:min(300px,calc(100vw - 32px));background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-3);padding:12px 14px;font-family:var(--font);font-size:var(--fs-sm);line-height:1.45;animation:la-tip-in .25s var(--ease-out)}',
+    '.la-tip b{display:block;margin-bottom:4px;color:var(--granate);font-size:var(--fs-xs);letter-spacing:.04em;text-transform:uppercase}.la-tip p{margin:0 0 10px}',
+    '.la-tip .acc{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.la-tip .acc button{border:0;border-radius:var(--r-sm);padding:6px 10px;font:inherit;font-size:var(--fs-xs);cursor:pointer}',
+    '.la-tip .si{background:var(--granate);color:#fff}.la-tip .no{background:var(--surface-2);color:var(--text-2)}.la-tip .hoy{background:none;color:var(--text-3);text-decoration:underline;padding:6px 2px}',
+    '@keyframes la-tip-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}@media print{.la-tip{display:none}}',
     '.la-panel{position:fixed;right:18px;bottom:calc(162px + env(safe-area-inset-bottom));z-index:61;width:min(380px,calc(100vw - 32px));max-height:min(620px,calc(100vh - 190px));display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-xl);box-shadow:var(--sh-3);overflow:hidden;font-family:var(--font)}',
     '.la-panel[hidden]{display:none}',
     '.la-head{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--granate);color:#fff}.la-head svg{width:40px;height:auto;flex:none}',
@@ -5226,6 +5231,96 @@ document.addEventListener('change', async ev => {
     preguntar(t);
     inp.value = '';
   });
+
+  /* ---------- Consejos para el vendedor ----------
+     De vez en cuando LanAI sugiere una acción concreta con los datos de la app (seguimiento de cotizaciones,
+     cobros vencidos, clientes que dejaron de comprar). Primero a los 90 s de uso, luego cada 2 horas, como
+     máximo 4 al día; cada consejo se repite como mucho una vez cada 3 días. */
+  var CONSEJO_CLAVE = 'lanai-consejos', CONSEJO_CADA = 2 * 3600e3, CONSEJO_MAX_DIA = 4;
+  var mon = function (n, c) { try { return money(n, c); } catch (e) { return 'S/ ' + (Number(n) || 0).toFixed(2); } };
+  var hoyISO = function () { try { return todayISO(); } catch (e) { return new Date().toISOString().slice(0, 10); } };
+  var dias = function (a, b) { try { return daysBetween(a, b); } catch (e) { return Math.round((new Date(b) - new Date(a)) / 864e5); } };
+  var nomCli = function (d) { return (d.cliente && d.cliente.nombre) || 'tu cliente'; };
+  var num = function (d) { try { return docNum(d); } catch (e) { return d.serie + '-' + d.numero; } };
+  var tot = function (d) { try { return totalOf(d); } catch (e) { return (d.totales && d.totales.total) || 0; } };
+  var GENERALES = [
+    'Antes de enviar una cotización, llama 1 minuto al cliente para confirmar qué necesita: cotizar a ciegas cierra menos.',
+    'Cuando un cliente compre, ofrécele un producto que complemente lo que lleva. Sumar una línea vale más que conseguir un cliente nuevo.',
+    'Responde las cotizaciones el mismo día. El que contesta primero suele ganar la venta.',
+    'Pon una fecha de vigencia corta en tus cotizaciones (7 a 15 días): ayuda a que el cliente decida.',
+    'Si un cliente te dice que está caro, pregúntale con qué te compara antes de bajar el precio.',
+    'Un cliente al día con sus pagos merece un trato preferente: avísale primero cuando tengas stock o promociones.',
+    'Al facturar al crédito, deja claro el día de pago en el mensaje y recuérdalo 2 días antes: se cobra más rápido.',
+    'Revisa cada lunes tus cotizaciones enviadas: las que tienen más de una semana sin respuesta necesitan una llamada.'
+  ];
+  function consejosDeDatos() {
+    var L = docs().filter(function (d) { return d.numero; }), hoy = hoyISO(), out = [];
+    L.filter(function (d) { return d.tipo === 'COT' && d.estado === 'aprobada'; }).slice(0, 2).forEach(function (d) {
+      out.push({ id: 'aprob-' + d.id, t: nomCli(d) + ' aprobó la cotización ' + num(d) + ' por ' + mon(tot(d), d.moneda) + '. Factúrala hoy para no perder la venta.' });
+    });
+    L.filter(function (d) { return d.tipo === 'COT' && d.estado === 'enviada' && d.clase !== 'OV'; }).forEach(function (d) {
+      var n = dias(d.fecha, hoy), v = d.vence ? dias(hoy, d.vence) : 99;
+      if (v >= 0 && v <= 2) out.push({ id: 'vence-' + d.id, t: 'La cotización ' + num(d) + ' a ' + nomCli(d) + ' vence ' + (v === 0 ? 'hoy' : v === 1 ? 'mañana' : 'en 2 días') + '. Llámalo y ofrécele mantener el precio si decide esta semana.' });
+      else if (v > 2 && n >= 3) out.push({ id: 'segui-' + d.id, t: 'La cotización ' + num(d) + ' a ' + nomCli(d) + ' (' + mon(tot(d), d.moneda) + ') lleva ' + n + ' días sin respuesta. Una llamada corta hoy suele cerrar más que otro correo.' });
+    });
+    L.filter(function (d) { return d.tipo === '01' && d.formaPago === 'Credito' && d.estado === 'aceptado' && !d.cobrado && d.vence && d.vence < hoy; }).forEach(function (d) {
+      out.push({ id: 'cobro-' + d.id, t: 'La factura ' + num(d) + ' de ' + nomCli(d) + ' por ' + mon(tot(d), d.moneda) + ' venció hace ' + dias(d.vence, hoy) + ' días. Escríbele hoy con amabilidad y propón una fecha de pago.' });
+    });
+    var compras = {};
+    L.filter(function (d) { return (d.tipo === '01' || d.tipo === '03') && ['aceptado', 'observado'].indexOf(d.estado) >= 0 && d.cliente && d.cliente.numDoc; }).forEach(function (d) {
+      var k = d.cliente.numDoc, c = compras[k] || (compras[k] = { n: 0, ult: '', nombre: nomCli(d) }); c.n++; if (d.fecha > c.ult) c.ult = d.fecha;
+    });
+    Object.keys(compras).forEach(function (k) {
+      var c = compras[k], n = dias(c.ult, hoy);
+      if (c.n >= 3 && n >= 45) out.push({ id: 'perdido-' + k, t: c.nombre + ' te compraba seguido y no lo hace desde hace ' + n + ' días. Escríbele para saber si necesita algo: recuperar un cliente cuesta menos que conseguir uno nuevo.' });
+    });
+    try {
+      var m = mes();
+      if (m.top && m.n >= 3) out.push({ id: 'top-' + hoy.slice(0, 7) + '-' + m.top, t: m.top + ' es tu mejor cliente este mes. Un mensaje de agradecimiento o un pequeño beneficio ayuda a que siga comprándote.' });
+    } catch (e) {}
+    return out;
+  }
+  function leerConsejos() { try { return JSON.parse(localStorage.getItem(CONSEJO_CLAVE)) || {}; } catch (e) { return {}; } }
+  function guardarConsejos(o) { try { localStorage.setItem(CONSEJO_CLAVE, JSON.stringify(o)); } catch (e) {} }
+  var consejoMem = {}, tip = null, tipTimer = 0;
+  function elegirConsejo() {
+    var st = leerConsejos(), vistos = st.vistos || consejoMem, ahora = Date.now();
+    var reciente = function (id) { return vistos[id] && ahora - vistos[id] < 3 * 864e5; };
+    var lista = consejosDeDatos().filter(function (c) { return !reciente(c.id); });
+    if (lista.length) return lista[0];
+    var g = GENERALES.map(function (t, i) { return { id: 'gen-' + i, t: t }; }).filter(function (c) { return !reciente(c.id); });
+    return g.length ? g[Math.floor(Math.random() * g.length)] : null;
+  }
+  function quitarConsejo() { clearTimeout(tipTimer); if (tip) { tip.remove(); tip = null; } }
+  function mostrarConsejo(c) {
+    quitarConsejo();
+    tip = el('div', 'la-tip'); tip.setAttribute('role', 'status');
+    tip.appendChild(el('b', null, 'Consejo de LanAI')); tip.appendChild(el('p', null, c.t));
+    var acc = el('div', 'acc'), si = el('button', 'si', 'Conversarlo'), no = el('button', 'no', 'Entendido'), hoy = el('button', 'hoy', 'No más consejos hoy');
+    [si, no, hoy].forEach(function (b) { b.type = 'button'; acc.appendChild(b); });
+    si.onclick = function () { quitarConsejo(); CHAT.push({ rol: 'lanai', texto: c.t + '\n\n¿Te ayudo a preparar el mensaje para el cliente?' }); abrir(true); };
+    no.onclick = quitarConsejo;
+    hoy.onclick = function () { var st = leerConsejos(); st.pausa = hoyISO(); guardarConsejos(st); quitarConsejo(); };
+    tip.appendChild(acc); document.body.appendChild(tip);
+    var r = btn.getBoundingClientRect(), vw = window.innerWidth, vh = window.innerHeight, S = tip.style, izq = r.left + r.width / 2 < vw / 2;
+    if (izq) S.left = Math.max(8, r.left) + 'px'; else S.right = Math.max(8, vw - r.right) + 'px';
+    if (r.top > vh / 2) S.bottom = (vh - r.top + 10) + 'px'; else S.top = (r.bottom + 10) + 'px';
+    tipTimer = setTimeout(quitarConsejo, 25e3);
+  }
+  function tocaConsejo() {
+    if (!panel.hidden || tip || document.hidden || document.body.classList.contains('sin-sesion')) return;
+    var st = leerConsejos(), hoy = hoyISO(), ahora = Date.now();
+    if (st.pausa === hoy) return;
+    if (st.dia !== hoy) { st.dia = hoy; st.n = 0; }
+    if (st.n >= CONSEJO_MAX_DIA || (st.ult && ahora - st.ult < CONSEJO_CADA)) return;
+    var c = elegirConsejo(); if (!c) return;
+    st.vistos = st.vistos || {}; st.vistos[c.id] = ahora; consejoMem[c.id] = ahora;
+    Object.keys(st.vistos).forEach(function (k) { if (ahora - st.vistos[k] > 7 * 864e5) delete st.vistos[k]; });
+    st.n++; st.ult = ahora; guardarConsejos(st);
+    mostrarConsejo(c);
+  }
+  btn.addEventListener('click', quitarConsejo);
+  setTimeout(tocaConsejo, 90e3); setInterval(tocaConsejo, 5 * 60e3);
   setInterval(actualizarBadge, 60e3); setTimeout(actualizarBadge, 1500);
 })();
 
