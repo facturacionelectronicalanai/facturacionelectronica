@@ -3,8 +3,8 @@
    - Íconos, manifiesto y configuración: copia guardada, actualizada en segundo plano.
    - No toca nada de otros dominios (API de SUNAT/LanAI, nube, fuentes) ni peticiones que no sean GET. */
 'use strict';
-const CACHE = 'aitoque-v3';
-const BASE = ['./FacturacionelectronicaLanAI.html', './granate-config.js', './app.webmanifest', './icono-192.png', './icono-512.png', './apple-touch-icon.png'];
+const CACHE = 'aitoque-v4';
+const BASE = ['./FacturacionelectronicaLanAI.html', './granate-config.js', './app.webmanifest', './icono-192.png', './icono-512.png', './apple-touch-icon.png', './logo-demo.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(BASE)).then(() => self.skipWaiting()));

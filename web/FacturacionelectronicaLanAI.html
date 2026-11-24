@@ -750,6 +750,18 @@ body.con-abar .wa-fab{bottom:calc(92px + env(safe-area-inset-bottom))}
 .wa-fab-txt{display:none}.wa-fab:hover .wa-fab-txt,.wa-fab:focus-visible .wa-fab-txt{display:inline}
 #main{padding-bottom:88px}
 @media print{.wa-fab{display:none}}
+/* Cobranzas */
+.vou-th{flex:none;width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--granate-50);color:var(--granate);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;margin-right:10px}
+.vou-th .icon{width:20px;height:20px}
+.vou-img{display:block;max-width:100%;max-height:60vh;margin:0 auto;border-radius:var(--r);border:1px solid var(--line)}
+.cob-res{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;margin-bottom:14px;border-radius:var(--r);background:var(--granate-50)}
+.cob-res small{display:block;color:var(--text-3);font-size:var(--fs-xs)}.cob-res b{font-size:var(--fs-md)}
+.cob-h{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);margin:14px 0 2px}
+.cob-foto{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:120px;padding:14px;border:2px dashed var(--line-2);border-radius:var(--r);cursor:pointer;text-align:center;background:var(--surface-2)}
+.cob-foto:hover{border-color:var(--granate)}.cob-foto img{max-width:100%;max-height:220px;border-radius:8px}
+.cob-foto-vacio{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-2)}.cob-foto-vacio small{color:var(--text-3);max-width:420px}
+.cob-foto-ok{display:inline-flex;align-items:center;gap:6px;color:var(--ok);font-weight:600;font-size:var(--fs-sm)}
+.xls-panel{margin-bottom:16px}
 /* Celular: al arrastrar WhatsApp o LanAI aparece abajo una zona «Soltar para ocultar» */
 .fab-cerrar{display:none}
 @media (max-width:719px){
@@ -1377,113 +1389,220 @@ async function sha256b64(text) {
   } catch { return uid().slice(0, 28); }
 }
 
-/* ---------- datos de demostración (ficticios) ---------- */
+/* ---------- datos de demostración (ficticios) ----------
+   Versión de prueba: una empresa ficticia, «LanAI Demo S.A.C.», con 12 meses de movimiento para que se puedan
+   probar todas las funciones (cotizaciones en todos sus estados, facturas, boletas, notas, guías, notas de venta,
+   ventas al crédito con cobranzas y vouchers, reportes y Excel). Todo es inventado y se genera igual cada vez. */
+const DEMO_EMPRESA = { ruc: '20000000338', razon: 'LANAI DEMO S.A.C.', comercial: 'LanAI Demo', direccion: 'AV. LAS ORQUÍDEAS 585, OF. 1201', ubigeo: '150131', distrito: 'San Isidro', provincia: 'Lima', departamento: 'Lima', telefono: '(01) 000-0000', email: 'ventas@lanai-demo.pe', cuentas: '' };
+const DEMO_VENDEDORES = ['Carla Ríos', 'Jorge Huamán', 'Valeria Soto', 'Diego Paredes'];
+const MEDIOS_PAGO = ['Transferencia', 'Depósito en cuenta', 'Yape', 'Plin', 'Efectivo', 'Cheque', 'Otro'];
 function buildSeed(today) {
+  let semilla = 20261124;
+  const rnd = () => { semilla |= 0; semilla = (semilla + 0x6D2B79F5) | 0; let t = Math.imul(semilla ^ (semilla >>> 15), 1 | semilla); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const ent = (a, b) => a + Math.floor(rnd() * (b - a + 1));
+  const uno = arr => arr[Math.floor(rnd() * arr.length)];
   const cfg = defaultConfig();
-  cfg.empresa = { ...MASTER_STEEL };
+  cfg.empresa = { ...DEMO_EMPRESA };
+  cfg.marca = { titulo: 'LANAI DEMO S.A.C.', sub: 'Versión de prueba · datos de ejemplo' };
   cfg.docs.cuentas = [
-    { banco: 'BCP', tipo: 'Corriente', moneda: 'PEN', numero: '000-0000000-0-00', cci: '00200000000000000000', enCot: true, enFac: true },
-    { banco: 'Interbank', tipo: 'Corriente', moneda: 'USD', numero: '000-0000000000', cci: '00300000000000000000', enCot: true, enFac: true },
+    { banco: 'BCP', tipo: 'Corriente', moneda: 'PEN', numero: '000-1234567-0-01 (demo)', cci: '002-000-001234567001-01', enCot: true, enFac: true },
+    { banco: 'Interbank', tipo: 'Corriente', moneda: 'PEN', numero: '000-0012345678 (demo)', cci: '003-000-000012345678-02', enCot: true, enFac: true },
+    { banco: 'BBVA', tipo: 'Corriente', moneda: 'USD', numero: '0011-0000-0100012345 (demo)', cci: '011-000-000100012345-03', enCot: true, enFac: true },
   ];
-  cfg.docs.detraccion = '00-000-000000';
-  cfg.docs.cot.firmaNombre = 'Equipo comercial'; cfg.docs.cot.firmaCargo = 'Master Steel Callao';
-  cfg.vendedores = ['Carlos Ramírez', 'Lucía Torres', 'Miguel Salazar'];
+  cfg.docs.detraccion = '00-000-123456 (demo)';
+  cfg.docs.cot.firmaNombre = 'Carla Ríos'; cfg.docs.cot.firmaCargo = 'Jefa comercial · LanAI Demo';
+  cfg.vendedores = [...DEMO_VENDEDORES];
+  cfg.tipoCambio = 3.75;
+  cfg.condiciones = 'Precios en la moneda indicada. Entrega en Lima Metropolitana de 2 a 5 días hábiles desde la orden de compra. Garantía de 12 meses en equipos.';
   const C = [
-    { tipoDoc: '6', numDoc: '20000000028', nombre: 'Constructora Demo Norte S.A.C.', direccion: 'Av. Demo 456, Trujillo, La Libertad', ubigeo: '130101', email: 'compras@constructora-demo.pe', telefono: '' },
-    { tipoDoc: '6', numDoc: '20000000036', nombre: 'Agroexportadora Demo Sur S.A.', direccion: 'Panamericana Sur km 300, Ica', ubigeo: '110101', email: 'logistica@agro-demo.pe', telefono: '' },
-    { tipoDoc: '6', numDoc: '20000000044', nombre: 'Distribuidora Demo Centro S.R.L.', direccion: 'Jr. Ejemplo 789, Huancayo, Junín', ubigeo: '120101', email: 'pagos@distribuidora-demo.pe', telefono: '' },
-    { tipoDoc: '6', numDoc: '20000000052', nombre: 'Inversiones Demo Lima E.I.R.L.', direccion: 'Calle Muestra 321, Miraflores, Lima', ubigeo: '150122', email: 'gerencia@inversiones-demo.pe', telefono: '' },
-    { tipoDoc: '6', numDoc: '10000000014', nombre: 'Ana Pérez Rojas (demo)', direccion: 'Av. Prueba 100, Surco, Lima', ubigeo: '150140', email: '', telefono: '' },
-    { tipoDoc: '1', numDoc: '00000001', nombre: 'Carlos Mendoza (demo)', direccion: 'Jr. Prueba 55, Lince, Lima', ubigeo: '150116', email: '', telefono: '' },
-  ].map(c => ({ ...c, id: uid(), demo: true }));
+    { tipoDoc: '6', numDoc: '20000000117', nombre: 'Constructora Andina Demo S.A.C.', direccion: 'Av. Ejemplo 456, Trujillo, La Libertad', ubigeo: '130101', email: 'compras@andina-demo.pe' },
+    { tipoDoc: '6', numDoc: '20000000133', nombre: 'Agroexportadora del Sur Demo S.A.', direccion: 'Panamericana Sur km 300, Ica', ubigeo: '110101', email: 'logistica@agrosur-demo.pe' },
+    { tipoDoc: '6', numDoc: '20000000150', nombre: 'Distribuidora Centro Demo S.R.L.', direccion: 'Jr. Muestra 789, Huancayo, Junín', ubigeo: '120101', email: 'pagos@centro-demo.pe' },
+    { tipoDoc: '6', numDoc: '20000000176', nombre: 'Clínica Santa Prueba S.A.C.', direccion: 'Av. Salud 1200, San Borja, Lima', ubigeo: '150130', email: 'logistica@santaprueba-demo.pe' },
+    { tipoDoc: '6', numDoc: '20000000192', nombre: 'Minera Cordillera Demo S.A.A.', direccion: 'Calle Mina 55, Cajamarca', ubigeo: '060101', email: 'proveedores@cordillera-demo.pe' },
+    { tipoDoc: '6', numDoc: '20000000214', nombre: 'Colegio Nuevo Horizonte Demo E.I.R.L.', direccion: 'Av. Educación 320, Arequipa', ubigeo: '040101', email: 'administracion@horizonte-demo.pe' },
+    { tipoDoc: '6', numDoc: '20000000231', nombre: 'Transportes Rápidos Demo S.A.C.', direccion: 'Av. Argentina 2100, Callao', ubigeo: '070101', email: 'compras@rapidos-demo.pe' },
+    { tipoDoc: '6', numDoc: '20000000257', nombre: 'Inversiones Pacífico Demo S.A.C.', direccion: 'Calle Las Begonias 441, San Isidro, Lima', ubigeo: '150131', email: 'gerencia@pacifico-demo.pe' },
+    { tipoDoc: '6', numDoc: '20000000273', nombre: 'Restaurante El Buen Sabor Demo E.I.R.L.', direccion: 'Av. Larco 900, Miraflores, Lima', ubigeo: '150122', email: 'caja@buensabor-demo.pe' },
+    { tipoDoc: '6', numDoc: '20000000290', nombre: 'Hotel Mirador Demo S.A.C.', direccion: 'Plaza de Armas 12, Cusco', ubigeo: '080101', email: 'compras@mirador-demo.pe' },
+    { tipoDoc: '6', numDoc: '10000000022', nombre: 'Rosa Gutiérrez Vela (demo)', direccion: 'Av. Prueba 100, Surco, Lima', ubigeo: '150140', email: '' },
+    { tipoDoc: '6', numDoc: '10000000049', nombre: 'Luis Ccahuana Mamani (demo)', direccion: 'Jr. Lima 340, Puno', ubigeo: '210101', email: '' },
+    { tipoDoc: '1', numDoc: '00000011', nombre: 'Carlos Mendoza Ruiz (demo)', direccion: 'Jr. Prueba 55, Lince, Lima', ubigeo: '150116', email: '' },
+    { tipoDoc: '1', numDoc: '00000022', nombre: 'María Fernández Quispe (demo)', direccion: 'Calle Real 210, Huancayo', ubigeo: '120101', email: '' },
+  ].map(c => ({ telefono: '', ...c, id: uid(), demo: true }));
   const P = [
-    { codigo: 'P001', desc: 'Asesoría técnica en estructuras metálicas (hora)', unidad: 'HUR', precio: 180, afect: '10', detraccion: '022' },
-    { codigo: 'P002', desc: 'Fabricación de estructura metálica por encargo', unidad: 'ZZ', precio: 4800, afect: '10', detraccion: '025' },
-    { codigo: 'P003', desc: 'Habilitado de fierro por encargo (corte y doblado, por tonelada)', unidad: 'ZZ', precio: 95, afect: '10', detraccion: '025' },
-    { codigo: 'P004', desc: 'Montaje de cobertura metálica', unidad: 'ZZ', precio: 2200, afect: '10', detraccion: '030' },
-    { codigo: 'P005', desc: 'Plancha LAC 1/4" × 1.20 × 2.40 m', unidad: 'NIU', precio: 520, afect: '10', pesoKg: 143.6 },
-    { codigo: 'P006', desc: 'Tubo cuadrado LAC 2" × 2.0 mm × 6 m', unidad: 'NIU', precio: 68, afect: '10', pesoKg: 18.6 },
-    { codigo: 'P007', desc: 'Mantenimiento de estructuras metálicas (mensual)', unidad: 'ZZ', precio: 1150, afect: '10', detraccion: '020' },
-    { codigo: 'P008', desc: 'Fierro corrugado ASTM A615 1/2" × 9 m', unidad: 'NIU', precio: 39.5, afect: '10', pesoKg: 8.94 },
-    { codigo: 'P009', desc: 'Ángulo LAC 2" × 3/16" × 6 m', unidad: 'NIU', precio: 92, afect: '10', pesoKg: 21.4 },
-    { codigo: 'P010', desc: 'Viga H A36 6" × 6 m', unidad: 'NIU', precio: 1180, afect: '10', pesoKg: 222 },
+    { codigo: 'P001', desc: 'Laptop 14" Core i5, 16 GB RAM, SSD 512 GB', unidad: 'NIU', precio: 2950, afect: '10', pesoKg: 1.6 },
+    { codigo: 'P002', desc: 'Monitor LED 24" Full HD', unidad: 'NIU', precio: 520, afect: '10', pesoKg: 4.2 },
+    { codigo: 'P003', desc: 'Impresora multifuncional láser', unidad: 'NIU', precio: 1180, afect: '10', pesoKg: 11.5 },
+    { codigo: 'P004', desc: 'Silla ergonómica de oficina', unidad: 'NIU', precio: 640, afect: '10', pesoKg: 14 },
+    { codigo: 'P005', desc: 'Escritorio de melamina 1.20 m', unidad: 'NIU', precio: 450, afect: '10', pesoKg: 28 },
+    { codigo: 'P006', desc: 'Kit teclado y mouse inalámbrico', unidad: 'NIU', precio: 89.9, afect: '10', pesoKg: 0.8 },
+    { codigo: 'P007', desc: 'Tóner para impresora láser', unidad: 'NIU', precio: 210, afect: '10', pesoKg: 0.9 },
+    { codigo: 'P008', desc: 'Papel bond A4 80 g (caja de 10 millares)', unidad: 'NIU', precio: 245, afect: '10', pesoKg: 25 },
+    { codigo: 'P009', desc: 'Router Wi-Fi 6 empresarial', unidad: 'NIU', precio: 690, afect: '10', pesoKg: 1.2 },
+    { codigo: 'P010', desc: 'Libro contable empastado (exonerado)', unidad: 'NIU', precio: 38, afect: '20', pesoKg: 1.1 },
+    { codigo: 'S001', desc: 'Mantenimiento preventivo de equipos de cómputo', unidad: 'ZZ', precio: 1350, afect: '10', detraccion: '020' },
+    { codigo: 'S002', desc: 'Soporte técnico mensual (plan empresa)', unidad: 'ZZ', precio: 1800, afect: '10', detraccion: '022' },
+    { codigo: 'S003', desc: 'Instalación de red y cableado estructurado', unidad: 'ZZ', precio: 4200, afect: '10', detraccion: '037' },
+    { codigo: 'S004', desc: 'Capacitación en ofimática (hora)', unidad: 'HUR', precio: 120, afect: '10', detraccion: '022' },
   ].map(p => ({ ...p, id: uid(), demo: true }));
-  const docs = [];
+  const BIENES = P.filter(p => !UNIDADES_SERV.includes(p.unidad)).map(p => P.indexOf(p)), SERV = P.filter(p => UNIDADES_SERV.includes(p.unidad)).map(p => P.indexOf(p));
+  const EMPRESAS = C.map((c, i) => i).filter(i => C[i].tipoDoc === '6' && C[i].numDoc.startsWith('20'));
+  const PERSONAS = C.map((c, i) => i).filter(i => !EMPRESAS.includes(i));
+  const docs = [], movimientos = [], num = {};
+  const sig = serie => (num[serie] = (num[serie] || 0) + 1);
   const cliSnap = i => { const c = C[i]; return { id: c.id, tipoDoc: c.tipoDoc, numDoc: c.numDoc, nombre: c.nombre, direccion: c.direccion, ubigeo: c.ubigeo, email: c.email, telefono: c.telefono }; };
-  const items = arr => arr.map(([pi, q]) => ({ id: uid(), codigo: P[pi].codigo, desc: P[pi].desc, unidad: P[pi].unidad, cant: q, precio: P[pi].precio, afect: '10' }));
-  const okSunat = (tipo, serie, numero, fecha) => ({ estado: 'aceptado', codigo: '0', descripcion: `La ${TIPOS[tipo].sunat} numero ${serie}-${numero}, ha sido aceptada`, hash: (uid() + uid()).slice(0, 28), fecha: fecha + 'T10:31:00', modo: 'simulador', ambiente: 'beta' });
-  const mk = (tipo, numero, ago, ci, its, extra = {}) => {
-    const fecha = addDays(today, -ago);
-    const serie = tipo === 'COT' ? cfg.series.COT : tipo === '07' ? cfg.series['07F'] : tipo === '08' ? cfg.series['08F'] : cfg.series[tipo];
-    const d = { id: uid(), tipo, serie, numero, fecha, hora: '10:30:00', moneda: 'PEN', incluyeIGV: false, igvRate: 0.18, cliente: cliSnap(ci), items: items(its), formaPago: 'Contado', cuotas: [], obs: '', estado: tipo === 'COT' ? 'enviada' : tipo === 'NV' ? 'emitida' : 'aceptado', creado: fecha + 'T10:30:00', demo: true, ...extra };
+  const VARIOS = { id: '', tipoDoc: '0', numDoc: '', nombre: 'Clientes varios', direccion: '', ubigeo: '', email: '', telefono: '' };
+  const items = arr => arr.map(([pi, q]) => ({ id: uid(), codigo: P[pi].codigo, desc: P[pi].desc, unidad: P[pi].unidad, cant: q, precio: P[pi].precio, afect: P[pi].afect }));
+  const hora = () => `${pad(ent(8, 18), 2)}:${pad(ent(0, 59), 2)}:00`;
+  const okSunat = (tipo, serie, numero, fecha, h) => ({ estado: 'aceptado', codigo: '0', descripcion: `La ${TIPOS[tipo].sunat} numero ${serie}-${numero}, ha sido aceptada`, hash: (uid() + uid()).slice(0, 28), fecha: `${fecha}T${h}`, modo: 'simulador', ambiente: 'beta' });
+  const totales = d => { const c = calc(d); d.totales = { gravada: c.gravada, exonerada: c.exonerada, inafecta: c.inafecta, igv: c.igv, total: c.total }; if (d.tipo === '01') { const sp = spot(d, cfg.tipoCambio); d.totales.detraccion = sp.aplica ? sp.monto : 0; d.totales.neto = sp.neto; } return d; };
+  const mov = (evento, d, ts, detalle = '') => movimientos.push({ id: uid(), ts: new Date(ts).toISOString(), evento, docId: d.id, tipo: d.tipo, docNum: docNum(d), cliente: d.cliente?.nombre || '', monto: d.tipo !== '09' ? d.totales?.total || 0 : 0, moneda: d.moneda || 'PEN', detalle, estado: d.estado, usuario: d.vendedor || 'LanAI Demo' });
+  const mk = (tipo, fecha, ci, its, extra = {}) => {
+    const serie = extra.serie || (tipo === 'COT' ? cfg.series.COT : tipo === '07' ? cfg.series['07F'] : tipo === '08' ? cfg.series['08F'] : cfg.series[tipo]);
+    const h = extra.hora || hora();
+    const d = { id: uid(), tipo, serie, numero: 0, fecha, hora: h, moneda: 'PEN', incluyeIGV: false, igvRate: 0.18, cliente: ci === null ? { ...VARIOS } : cliSnap(ci), items: items(its), formaPago: 'Contado', cuotas: [], obs: '', estado: tipo === 'COT' ? 'enviada' : tipo === 'NV' ? 'emitida' : 'aceptado', creado: `${fecha}T${h}`, demo: true, ...extra };
+    if (d.estado !== 'borrador') d.numero = sig(serie);
+    if (d.moneda === 'USD') d.tipoCambio = d.tipoCambio || cfg.tipoCambio;
     if (tipo === 'COT') { d.vence = d.vence || addDays(fecha, 15); d.condiciones = cfg.condiciones; }
-    if (['01', '03', 'NV', 'COT'].includes(tipo)) d.vendedor = d.vendedor || cfg.vendedores[(numero + ci) % cfg.vendedores.length];
+    if (['01', '03', 'NV', 'COT'].includes(tipo)) d.vendedor = d.vendedor || uno(DEMO_VENDEDORES);
     if (tipo === '01') { d.diasCredito = d.diasCredito || 30; if (d.formaPago !== 'Credito') d.vence = fecha; }
     if (['01', '03'].includes(tipo)) { d.operacion = d.operacion || sugerirOperacion(d.items); d.guias = d.guias || []; }
     if (tipo === '01' && d.operacion === 'servicios') {
-      const cods = d.items.map(it => P.find(p => p.codigo === it.codigo)?.detraccion).filter(Boolean);
-      if (spot({ ...d, detraccion: { codigo: cods[0] || '037' } }, cfg.tipoCambio).sobre) d.detraccion = { codigo: cods[0] || '037' };
+      const cod = d.items.map(it => P.find(p => p.codigo === it.codigo)?.detraccion).find(Boolean) || '037';
+      d.detraccion = { codigo: '', noSujeta: false, motivo: '' };
+      if (spot({ ...d, detraccion: { codigo: cod } }, cfg.tipoCambio).sobre) d.detraccion.codigo = cod;
     }
-    d.totales = (({ gravada, exonerada, inafecta, igv, total }) => ({ gravada, exonerada, inafecta, igv, total }))(calc(d));
-    if (ES_SUNAT(tipo) && d.estado === 'aceptado') d.sunat = okSunat(tipo, d.serie, numero, fecha);
-    docs.push(d); return d;
+    totales(d);
+    if (ES_SUNAT(tipo) && d.estado === 'aceptado') d.sunat = okSunat(tipo, d.serie, d.numero, fecha, h);
+    docs.push(d);
+    return d;
   };
-  /* guía de remisión de los bienes de una factura (se emite antes de facturar, como en un despacho real) */
-  let nGre = 0;
-  const gre = (fac, ago, extra = {}) => {
-    const fecha = addDays(today, -ago), ci = C.findIndex(c => c.id === fac.cliente.id);
+  const gre = (fac) => {
     const its = fac.items.filter(it => !esServicio(it)).map(it => ({ id: uid(), codigo: it.codigo, desc: it.desc, unidad: it.unidad, cant: it.cant }));
+    if (!its.length) return null;
+    const ci = C.findIndex(c => c.id === fac.cliente.id); if (ci < 0) return null;
     const peso = r2(its.reduce((a, it) => a + (P.find(p => p.codigo === it.codigo)?.pesoKg || 1) * it.cant, 0) + 1.5);
-    const d = { id: uid(), tipo: '09', serie: cfg.series['09'], numero: ++nGre, fecha, hora: '09:10:00', cliente: cliSnap(ci), items: its, obs: '', estado: 'aceptado', creado: fecha + 'T09:10:00', demo: true,
-      traslado: { motivo: '01', descMotivo: '', fechaInicio: fecha, modalidad: '02', pesoKg: peso, bultos: its.reduce((a, it) => a + it.cant, 0), m1l: false,
+    const h = '08:40:00', d = { id: uid(), tipo: '09', serie: cfg.series['09'], numero: sig(cfg.series['09']), fecha: fac.fecha, hora: h, cliente: cliSnap(ci), items: its, obs: '', estado: 'aceptado', creado: `${fac.fecha}T${h}`, demo: true, facturaId: fac.id,
+      traslado: { motivo: '01', descMotivo: '', fechaInicio: fac.fecha, modalidad: '02', pesoKg: peso, bultos: its.reduce((a, it) => a + it.cant, 0), m1l: false,
         partida: { ubigeo: cfg.empresa.ubigeo, direccion: cfg.empresa.direccion }, llegada: { ubigeo: C[ci].ubigeo, direccion: C[ci].direccion },
-        conductor: { tipoDoc: '1', numDoc: '00000002', nombres: 'Luis Alberto', apellidos: 'Quispe Ramos', licencia: 'Q00000002' }, placa: 'ABC123', transportista: { ruc: '', razon: '', mtc: '' } },
-      docRel: null, ...extra };
-    d.sunat = { ...okSunat('09', d.serie, d.numero, fecha), descripcion: `La Guia de Remision ${d.serie}-${d.numero} ha sido aceptada (simulador: SUNAT no tiene beta de GRE)` };
+        conductor: { tipoDoc: '1', numDoc: '00000033', nombres: 'Luis Alberto', apellidos: 'Quispe Ramos', licencia: 'Q00000033' }, placa: 'ABC123', transportista: { ruc: '', razon: '', mtc: '' } },
+      docRel: null };
+    d.sunat = { ...okSunat('09', d.serie, d.numero, fac.fecha, h), descripcion: `La Guia de Remision ${d.serie}-${d.numero} ha sido aceptada (simulador: SUNAT no tiene beta de GRE)` };
     fac.guias = [{ id: d.id, serie: d.serie, numero: d.numero }];
-    docs.push(d); return d;
+    docs.push(d);
+    return d;
   };
-  const link = (cot, f) => { cot.estado = 'facturada'; cot.facturaId = f.id; f.origenId = cot.id; };
-  const c1 = mk('COT', 1, 175, 0, [[1, 1], [0, 10]]);
-  const f1 = mk('01', 1, 165, 0, [[1, 1], [0, 10]], { cobrado: true }); link(c1, f1);
-  const f2 = mk('01', 2, 150, 1, [[4, 3]], { cobrado: true }); gre(f2, 151);
-  const c2 = mk('COT', 2, 100, 0, [[6, 1]]);
-  mk('01', 3, 128, 3, [[6, 1]], { cobrado: true });
-  mk('01', 4, 120, 2, [[3, 1], [2, 10]], { cobrado: true });
-  const f5 = mk('01', 5, 95, 0, [[6, 1]], { cobrado: true }); link(c2, f5);
-  const c3 = mk('COT', 3, 92, 1, [[1, 1]]);
-  const f6 = mk('01', 6, 88, 1, [[1, 1]], { cobrado: true }); link(c3, f6);
-  const f7 = mk('01', 7, 70, 3, [[4, 2], [5, 2]], { cobrado: true }); gre(f7, 71);
-  const nc = mk('07', 1, 64, 3, [[5, 1]]);
-  nc.ref = { id: f7.id, tipo: '01', serie: f7.serie, numero: f7.numero, motivo: '07', sustento: 'Devolución de un monitor por falla de fábrica.' };
-  mk('01', 8, 60, 2, [[6, 1]], { cobrado: true });
-  const nv1 = mk('NV', 1, 51, 5, [[5, 1]], { serie: cfg.series.NV });
-  const b1 = mk('03', 1, 50, 5, [[5, 1]], { serie: 'B001', cliente: cliSnap(5) }); nv1.estado = 'convertida'; nv1.facturaId = b1.id; b1.origenId = nv1.id;
-  const f9 = mk('01', 9, 45, 0, [[0, 24]], { formaPago: 'Credito' });
-  f9.cuotas = [{ monto: spot(f9, cfg.tipoCambio).neto, fecha: addDays(f9.fecha, 30) }]; f9.vence = f9.cuotas[0].fecha; f9.cobrado = false;
-  const c4 = mk('COT', 4, 40, 1, [[1, 1], [3, 1]]);
-  const f10 = mk('01', 10, 33, 1, [[1, 1], [3, 1]], { cobrado: true }); link(c4, f10);
-  mk('COT', 5, 26, 2, [[1, 1]], { estado: 'rechazada' });
-  mk('01', 11, 20, 3, [[2, 25], [6, 1]], { cobrado: true });
-  const nd = mk('08', 1, 16, 0, [], { items: [{ id: uid(), codigo: '', desc: 'Intereses moratorios por pago fuera de plazo', unidad: 'ZZ', cant: 1, precio: 120, afect: '10' }] });
-  nd.ref = { id: f9.id, tipo: '01', serie: f9.serie, numero: f9.numero, motivo: '01', sustento: 'Intereses por 15 días de atraso en la cuota 1.' };
-  nd.totales = (({ gravada, exonerada, inafecta, igv, total }) => ({ gravada, exonerada, inafecta, igv, total }))(calc(nd));
-  mk('COT', 6, 14, 3, [[1, 1], [3, 1]], { estado: 'aprobada' });
-  mk('COT', 7, 13, 0, [[0, 40]], { estado: 'enviada' });
-  mk('COT', 8, 10, 2, [[4, 4], [5, 4]], { estado: 'enviada' });
-  const f12 = mk('01', 12, 9, 2, [[4, 1], [5, 1]], { formaPago: 'Credito' }); gre(f12, 9, { docRel: null });
-  const half = r2(f12.totales.total / 2);
-  f12.cuotas = [{ monto: half, fecha: addDays(f12.fecha, 30) }, { monto: r2(f12.totales.total - half), fecha: addDays(f12.fecha, 60) }]; f12.vence = f12.cuotas[1].fecha; f12.cobrado = false;
-  mk('03', 2, 6, 5, [[2, 2]], { serie: 'B001', cliente: { id: '', tipoDoc: '0', numDoc: '', nombre: 'Clientes varios', direccion: '', email: '', telefono: '' } });
-  mk('NV', 2, 5, 4, [[3, 1]], { serie: cfg.series.NV });
-  mk('01', 13, 4, 0, [[0, 8]], { cobrado: true });
-  mk('COT', 9, 3, 1, [[1, 1], [2, 20]], { estado: 'enviada' });
-  const fr = mk('01', 14, 2, 4, [[0, 6]], { estado: 'rechazado' });
-  fr.sunat = { estado: 'rechazado', codigo: '—', descripcion: 'Rechazo de ejemplo: el receptor no figura activo en el padrón. Corrige y emite un nuevo comprobante.', hash: '', fecha: fr.fecha + 'T11:02:00', modo: 'simulador', ambiente: 'beta' };
-  mk('01', 15, 1, 1, [[6, 1]], { estado: 'pendiente' });
-  mk('COT', 10, 0, 3, [[2, 15]], { estado: 'borrador' });
-  // bitácora inicial: un evento por documento (lo que vería un sistema que lleva meses operando)
-  const movimientos = docs.filter(d => d.numero).map(d => ({ id: uid(), ts: new Date(d.sunat?.fecha || d.creado).toISOString(), evento: d.tipo === 'COT' ? 'cotizacion.creada' : d.tipo === 'NV' ? 'nota_venta.emitida' : d.estado === 'rechazado' ? 'sunat.rechazado' : d.estado === 'aceptado' ? 'sunat.aceptado' : 'documento.emitido', docId: d.id, tipo: d.tipo, docNum: docNum(d), cliente: d.cliente?.nombre || '', monto: d.totales?.total || 0, moneda: d.moneda || 'PEN', detalle: d.sunat?.descripcion || '', demo: true }));
+  const pagar = (d, fecha, monto, extra = {}) => {
+    const cuenta = d.moneda === 'USD' ? cfg.docs.cuentas[2] : uno(cfg.docs.cuentas.slice(0, 2));
+    const medio = extra.medio || uno(['Transferencia', 'Transferencia', 'Transferencia', 'Depósito en cuenta', 'Yape', 'Plin', 'Cheque']);
+    const p = { id: uid(), fecha, monto: r2(monto), moneda: d.moneda, medio, cuenta: medio === 'Efectivo' ? 'Caja (efectivo)' : `${cuenta.banco} ${cuenta.moneda === 'USD' ? 'US$' : 'S/'} · ${cuenta.numero}`,
+      operacion: ['Efectivo'].includes(medio) ? '' : String(ent(100000, 99999999)), nota: '', voucherDemo: true, vendedor: d.vendedor, por: d.vendedor, ts: `${fecha}T${hora()}`, ...extra };
+    d.pagos = [...(d.pagos || []), p];
+    return p;
+  };
+  const cobrable = d => r2((d.cuotas || []).reduce((a, q) => a + Number(q.monto || 0), 0) || d.totales.neto || d.totales.total);
+  // ---- 12 meses de movimiento, del más antiguo al de hoy ----
+  const facturas = [], creditos = [];
+  for (let m = 11; m >= 0; m--) {
+    const ini = addMonths(today.slice(0, 7) + '-01', -m), fin = m === 0 ? today : addDays(addMonths(ini, 1), -1);
+    const nDias = daysBetween(ini, fin) + 1, crec = 1 + (11 - m) * 0.06;
+    const ev = [];
+    const nF = Math.round(ent(7, 11) * crec * (m === 0 ? Math.min(1, nDias / 30) : 1)), nB = Math.round(ent(5, 8) * (m === 0 ? Math.min(1, nDias / 30) : 1)), nC = Math.round(ent(5, 8) * (m === 0 ? Math.min(1, nDias / 30) : 1));
+    for (let i = 0; i < nC; i++) ev.push(['COT', addDays(ini, ent(0, nDias - 1))]);
+    for (let i = 0; i < nF; i++) ev.push(['01', addDays(ini, ent(0, nDias - 1))]);
+    for (let i = 0; i < nB; i++) ev.push(['03', addDays(ini, ent(0, nDias - 1))]);
+    if (m % 3 === 1) ev.push(['07', addDays(ini, ent(5, Math.max(5, nDias - 1)))]);
+    if (m === 4 || m === 1) ev.push(['08', addDays(ini, ent(3, Math.max(3, nDias - 1)))]);
+    if (m <= 2) ev.push(['NV', addDays(ini, ent(0, nDias - 1))]);
+    ev.sort((a, b) => a[1].localeCompare(b[1]));
+    for (const [tipo, fecha] of ev) {
+      if (fecha > today) continue;
+      const edad = daysBetween(fecha, today);
+      if (tipo === 'COT') {
+        const ci = uno(rnd() < 0.85 ? EMPRESAS : PERSONAS), servicio = rnd() < 0.35;
+        const its = servicio ? [[uno(SERV), ent(1, 3)]] : [[uno(BIENES), ent(1, 8)], ...(rnd() < 0.5 ? [[uno(BIENES), ent(1, 5)]] : [])];
+        const estado = edad > 30 ? uno(['facturada', 'facturada', 'facturada', 'rechazada', 'enviada']) : edad > 12 ? uno(['facturada', 'aprobada', 'enviada', 'rechazada']) : uno(['enviada', 'enviada', 'aprobada']);
+        const c = mk('COT', fecha, ci, its, { estado: estado === 'facturada' ? 'enviada' : estado });
+        if (estado === 'facturada') {
+          const fFecha = addDays(fecha, ent(2, 9)); if (fFecha > today) { c.estado = 'aprobada'; continue; }
+          const f = mk('01', fFecha, ci, its, { vendedor: c.vendedor, formaPago: rnd() < 0.4 ? 'Credito' : 'Contado' });
+          c.estado = 'facturada'; c.facturaId = f.id; f.origenId = c.id; facturas.push(f); if (f.formaPago === 'Credito') creditos.push(f);
+          if (f.operacion === 'bienes') gre(f);
+        }
+        continue;
+      }
+      if (tipo === '01') {
+        const ci = uno(EMPRESAS.concat(PERSONAS.filter(i => C[i].tipoDoc === '6'))), servicio = rnd() < 0.3, usd = !servicio && rnd() < 0.12;
+        const its = servicio ? [[uno(SERV), ent(1, 2)]] : [[uno(BIENES), ent(1, 10)], ...(rnd() < 0.45 ? [[uno(BIENES), ent(1, 6)]] : [])];
+        const f = mk('01', fecha, ci, its, { moneda: usd ? 'USD' : 'PEN', formaPago: rnd() < 0.45 ? 'Credito' : 'Contado' });
+        if (usd) f.items.forEach(it => { it.precio = r2(it.precio / cfg.tipoCambio); });
+        totales(f); facturas.push(f); if (f.formaPago === 'Credito') creditos.push(f);
+        if (f.operacion === 'bienes') gre(f);
+        continue;
+      }
+      if (tipo === '03') {
+        const anon = rnd() < 0.4, ci = anon ? null : uno(PERSONAS);
+        const its = [[uno(BIENES), ent(1, 3)], ...(rnd() < 0.3 ? [[uno(BIENES), 1]] : [])];
+        const b = mk('03', fecha, ci, its, { serie: cfg.series['03'] });
+        if (anon && b.totales.total > 700) { b.cliente = cliSnap(uno(PERSONAS.filter(i => C[i].tipoDoc === '1'))); }
+        continue;
+      }
+      if (tipo === '07') {
+        const base = facturas.filter(f => f.fecha < fecha && f.operacion === 'bienes' && f.moneda === 'PEN').slice(-6);
+        const ref = base.length ? uno(base) : null; if (!ref) continue;
+        const it = ref.items[0], nc = mk('07', fecha, C.findIndex(c => c.id === ref.cliente.id), [], { items: [{ ...clone(it), id: uid(), cant: 1 }] });
+        nc.ref = { id: ref.id, tipo: '01', serie: ref.serie, numero: ref.numero, motivo: '07', sustento: 'Devolución de una unidad por falla de fábrica.' };
+        totales(nc); continue;
+      }
+      if (tipo === '08') {
+        const ref = creditos.filter(f => f.fecha < addDays(fecha, -20) && f.moneda === 'PEN').slice(-3)[0]; if (!ref) continue;
+        const nd = mk('08', fecha, C.findIndex(c => c.id === ref.cliente.id), [], { items: [{ id: uid(), codigo: '', desc: 'Intereses moratorios por pago fuera de plazo', unidad: 'ZZ', cant: 1, precio: ent(80, 160), afect: '10' }] });
+        nd.ref = { id: ref.id, tipo: '01', serie: ref.serie, numero: ref.numero, motivo: '01', sustento: 'Intereses por atraso en el pago de la cuota.' };
+        totales(nd); continue;
+      }
+      if (tipo === 'NV') {
+        const ci = uno(PERSONAS), nv = mk('NV', fecha, ci, [[uno(BIENES), ent(1, 2)]], { serie: cfg.series.NV });
+        if (edad > 10) { const b = mk('03', addDays(fecha, 1) > today ? fecha : addDays(fecha, 1), ci, [], { serie: cfg.series['03'], items: clone(nv.items), vendedor: nv.vendedor }); totales(b); nv.estado = 'convertida'; nv.facturaId = b.id; b.origenId = nv.id; }
+      }
+    }
+  }
+  // ---- cuotas y cobranzas de las ventas al crédito ----
+  creditos.forEach((f, i) => {
+    const dos = f.totales.total > 3000 && i % 3 === 0, neto = r2(f.totales.neto || f.totales.total);
+    if (dos) { const half = r2(neto / 2); f.cuotas = [{ monto: half, fecha: addDays(f.fecha, 30) }, { monto: r2(neto - half), fecha: addDays(f.fecha, 60) }]; }
+    else f.cuotas = [{ monto: neto, fecha: addDays(f.fecha, 30) }];
+    f.vence = f.cuotas[f.cuotas.length - 1].fecha; f.diasCredito = daysBetween(f.fecha, f.vence); f.cobrado = false;
+    for (const q of f.cuotas) {
+      const atraso = ent(-6, 12), fp = addDays(q.fecha, atraso), vencida = q.fecha < today;
+      const sinPagar = vencida && daysBetween(q.fecha, today) < 70 && rnd() < 0.28;
+      if (fp > today || sinPagar) break;
+      if (rnd() < 0.14 && f.cuotas.length === 1) { const parte = r2(q.monto * 0.5); pagar(f, fp, parte); if (addDays(fp, 15) <= today && (rnd() < 0.5 || daysBetween(fp, today) > 60)) pagar(f, addDays(fp, ent(12, 25)) > today ? today : addDays(fp, ent(12, 25)), r2(q.monto - parte)); else break; }
+      else pagar(f, fp, q.monto);
+    }
+    const pagado = r2((f.pagos || []).reduce((a, p) => a + p.monto, 0));
+    if (pagado >= cobrable(f) - 0.01) { f.cobrado = true; f.cobradoFecha = f.pagos[f.pagos.length - 1].fecha; }
+  });
+  // ---- casos para probar las alertas: pendiente de envío, rechazado y borrador ----
+  const ayer = addDays(today, -1), anteayer = addDays(today, -2);
+  mk('01', ayer, EMPRESAS[2], [[SERV[1], 1]], { estado: 'pendiente', sunat: null });
+  const fr = mk('01', anteayer, EMPRESAS[7], [[BIENES[1], 2]], { estado: 'rechazado' });
+  fr.sunat = { estado: 'rechazado', codigo: '2800', descripcion: 'Rechazo de ejemplo: el dato ingresado en el tipo de documento de identidad del receptor no es válido. Corrige y emite un nuevo comprobante.', hash: '', fecha: `${fr.fecha}T11:02:00`, modo: 'simulador', ambiente: 'beta' };
+  mk('COT', today, EMPRESAS[3], [[BIENES[0], 5], [BIENES[1], 5]], { estado: 'borrador' });
+  mk('COT', addDays(today, -13), EMPRESAS[5], [[SERV[2], 1]], { estado: 'enviada', vence: addDays(today, 1) });
+  // ---- numeración correlativa por serie en orden de fecha y hora (como la llevaría SUNAT) ----
+  const porSerie = {};
+  docs.filter(d => d.numero).forEach(d => (porSerie[d.serie] = porSerie[d.serie] || []).push(d));
+  Object.values(porSerie).forEach(L => L.sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora)).forEach((d, i) => { d.numero = i + 1; }));
+  const byId = new Map(docs.map(d => [d.id, d]));
+  docs.forEach(d => {
+    if (d.ref && byId.get(d.ref.id)) d.ref.numero = byId.get(d.ref.id).numero;
+    (d.guias || []).forEach(g => { if (byId.get(g.id)) g.numero = byId.get(g.id).numero; });
+    if (d.sunat?.estado === 'aceptado') d.sunat.descripcion = d.tipo === '09' ? `La Guia de Remision ${d.serie}-${d.numero} ha sido aceptada (simulador: SUNAT no tiene beta de GRE)` : `La ${TIPOS[d.tipo].sunat} numero ${d.serie}-${d.numero}, ha sido aceptada`;
+  });
+  // ---- bitácora: lo que vería un sistema que lleva un año operando ----
+  docs.filter(d => d.numero).forEach(d => mov(d.tipo === 'COT' ? 'cotizacion.creada' : d.tipo === 'NV' ? 'nota_venta.emitida' : d.estado === 'aceptado' ? 'sunat.aceptado' : d.estado === 'rechazado' ? 'sunat.rechazado' : 'documento.emitido', d, `${d.fecha}T${d.hora}`));
+  docs.forEach(d => (d.pagos || []).forEach(p => mov('cobro.registrado', d, p.ts, `${money(p.monto, d.moneda)} · ${p.medio}${p.operacion ? ` · op. ${p.operacion}` : ''}`)));
   return { cfg, clientes: C, productos: P, documentos: docs, movimientos };
 }
 
@@ -1555,9 +1674,23 @@ async function initData() {
   if (nubeURL()) return startNube();
   startLocal();
 }
-/* Datos reales: desde esta época se borra lo de prueba (documentos, clientes, productos, bitácora y PDF) una sola vez
-   y la numeración de cada serie vuelve a empezar. Se conservan el emisor y la conexión con la API. */
-const DATOS_EPOCA = 'master-steel-real-1';
+/* Versión de prueba: al cambiar de época se cargan los datos de ejemplo de «LanAI Demo S.A.C.» (12 meses de
+   movimiento) para probar todas las funciones. Se conserva la conexión con la API. «Empezar en blanco» deja la
+   empresa de ejemplo sin documentos; «Restablecer datos de ejemplo» los vuelve a cargar. */
+const DATOS_EPOCA = 'demo-lanai-1';
+let DATOS_EJEMPLO = false;
+function semillaDemo(prev) {
+  const s = buildSeed(todayISO()), viejo = prev?.cfg ? mergeCfg(prev.cfg) : null;
+  if (viejo?.integracion) s.cfg.integracion = viejo.integracion;
+  return { cfg: s.cfg, logo: null, clientes: s.clientes, productos: s.productos, documentos: s.documentos, movimientos: s.movimientos, archivo: [] };
+}
+async function cargarLogoDemo() {
+  try {
+    const b = await (await fetch('logo-demo.png', { cache: 'no-cache' })).blob();
+    const dataUrl = await new Promise((ok, ko) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = ko; r.readAsDataURL(b); });
+    DB.logo = { dataUrl, w: 540, h: 180 }; persistLocal(); changed();
+  } catch { /* sin logo: se puede subir en Personalizar documentos */ }
+}
 const DEMO_VEND = ['Carlos Ramírez', 'Lucía Torres', 'Miguel Salazar'];
 function limpiarCfgDemo(c) {
   const m = mergeCfg(c || null);
@@ -1571,16 +1704,16 @@ let DATOS_BORRADOS = false;
 function startLocal() {
   DB.mode = 'local';
   let raw = null; try { raw = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch { raw = null; }
-  if (raw && raw.epoca !== DATOS_EPOCA) { raw = { cfg: limpiarCfgDemo(raw.cfg), logo: raw.logo || null }; DATOS_BORRADOS = true; try { indexedDB.deleteDatabase('granate-archivo'); } catch { /* */ } }
-  if (!raw) raw = { cfg: defaultConfig() };
+  if (!raw || raw.epoca !== DATOS_EPOCA) { raw = semillaDemo(raw); DATOS_EJEMPLO = true; try { indexedDB.deleteDatabase('granate-archivo'); } catch { /* */ } }
   DB.cfg = mergeCfg(raw.cfg); DB.logo = raw.logo || null;
   for (const k of ['clientes', 'productos', 'documentos', 'movimientos', 'archivo']) DB.cols[k] = new Map((raw[k] || []).map(o => [o.id, o]));
   persistLocal(); setReady();
+  if (DATOS_EJEMPLO) { cargarLogoDemo(); setTimeout(() => toast('Cargamos datos de ejemplo de LanAI Demo S.A.C.: 12 meses de ventas, cobranzas y reportes para que pruebes todo.', 'ok'), 700); }
 }
 function persistLocal() {
   if (DB.mode !== 'local') return;
   const movs = [...DB.cols.movimientos.values()].sort((a, b) => (b.ts || '').localeCompare(a.ts || '')).slice(0, 3000);
-  try { localStorage.setItem(LS_KEY, JSON.stringify({ epoca: DATOS_EPOCA, cfg: DB.cfg, logo: DB.logo, clientes: [...DB.cols.clientes.values()], productos: [...DB.cols.productos.values()], documentos: [...DB.cols.documentos.values()], movimientos: movs, archivo: [...DB.cols.archivo.values()] })); } catch { /* sin almacenamiento */ }
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ epoca: DATOS_EPOCA, cfg: DB.cfg, logo: DB.logo, clientes: [...DB.cols.clientes.values()], productos: [...DB.cols.productos.values()], documentos: [...DB.cols.documentos.values()], movimientos: movs, archivo: [...DB.cols.archivo.values()] })); } catch { if (!persistLocal.avisado) { persistLocal.avisado = true; toast('Este navegador ya no tiene espacio para guardar los cambios de la versión de prueba. Usa «Empezar en blanco» o la versión con usuario.', 'bad'); } }
 }
 function startDb(db) {
   DB.mode = 'db'; DB.db = db;
@@ -1655,7 +1788,7 @@ function changed() {
 }
 
 /* ---------- router ---------- */
-const ROUTES = ['inicio', 'cotizaciones', 'comprobantes', 'guias', 'historial', 'reportes', 'clientes', 'productos', 'personalizar', 'sunat', 'usuarios', 'editor'];
+const ROUTES = ['inicio', 'cotizaciones', 'comprobantes', 'cobranzas', 'guias', 'historial', 'reportes', 'clientes', 'productos', 'personalizar', 'sunat', 'usuarios', 'editor'];
 const currentRoute = () => { const h = location.hash.slice(1); return ROUTES.includes(h) ? h : 'inicio'; };
 let suppressHash = false;
 function onHash() {
@@ -1687,7 +1820,7 @@ function render() {
   if (DB.mode === 'nube' && !NUBE.sesion) return renderLogin();
   if (!DB.ready) { main.innerHTML = loadingHTML(); renderNav(); return; }
   const a = document.activeElement, keep = a && a.id && main.contains(a) ? { id: a.id, s: a.selectionStart, e: a.selectionEnd } : null;
-  const V = { inicio: vInicio, reportes: vReportes, personalizar: vPersonalizar, cotizaciones: vCotizaciones, comprobantes: vComprobantes, guias: vGuias, historial: vHistorial, clientes: vClientes, productos: vProductos, sunat: vSunat, usuarios: vUsuarios, editor: vEditor }[UI.route] || vInicio;
+  const V = { inicio: vInicio, cobranzas: vCobranzas, reportes: vReportes, personalizar: vPersonalizar, cotizaciones: vCotizaciones, comprobantes: vComprobantes, guias: vGuias, historial: vHistorial, clientes: vClientes, productos: vProductos, sunat: vSunat, usuarios: vUsuarios, editor: vEditor }[UI.route] || vInicio;
   main.innerHTML = V();
   renderNav();
   if (keep) { const el = document.getElementById(keep.id); if (el) { el.focus({ preventScroll: true }); try { if (keep.s != null) el.setSelectionRange(keep.s, keep.e); } catch { /* */ } } }
@@ -1712,7 +1845,8 @@ function renderNav() {
       ${item('inicio', 'home', 'Inicio', 'Inicio')}
       ${item('cotizaciones', 'quote', 'Cotizaciones', 'Cotiz.', apr)}
       ${item('comprobantes', 'receipt', 'Comprobantes', 'Comprob.', pend)}
-      ${item('guias', 'truck', 'Guías de remisión', 'Guías', gpend)}
+      ${item('cobranzas', 'coins', 'Cobranzas', 'Cobranzas', allDocs().filter(d => estadoCobro(d) === 'vencida').length)}
+      ${item('guias', 'truck', 'Guías de remisión', 'Guías', gpend, 'hide-sm')}
       ${item('reportes', 'chart', 'Reportes', 'Reportes')}
       ${item('historial', 'history', 'Historial', 'Historial', 0, 'hide-sm')}
       ${item('clientes', 'users', 'Clientes', 'Clientes', 0, 'hide-sm')}
@@ -1724,7 +1858,7 @@ function renderNav() {
     <div class="nav-foot">
       <div class="conn" title="${integ.modo === 'api' ? 'Conectado a tu API' : 'Simulador SUNAT'}"><span class="dot ${integ.modo === 'api' ? '' : 'sim'}"></span><span class="nf-txt">${integ.modo === 'api' ? `API · ${integ.ambiente === 'produccion' ? 'Producción' : 'Beta'}` : 'Simulador SUNAT'}</span></div>
       ${DB.mode === 'nube' ? navNubeHTML() : `<div class="nf-txt">${DB.mode === 'db' ? 'Datos sincronizados entre dispositivos' : DB.mode === 'local' ? 'Datos guardados en este navegador' : 'Cargando…'}</div>`}
-      ${typeof GRANATE_PRUEBA !== 'undefined' && GRANATE_PRUEBA ? `<span class="prueba-pill" title="Ambiente de prueba: sus datos se guardan aparte de la versión principal">Prueba</span><button class="linkbtn nf-txt" data-act="reset-demo" style="color:var(--nav-muted);text-align:left">Borrar todos los datos</button>` : ''}
+      ${typeof GRANATE_PRUEBA !== 'undefined' && GRANATE_PRUEBA ? `<span class="prueba-pill" title="Ambiente de prueba: sus datos se guardan aparte de la versión principal">Prueba</span><button class="linkbtn nf-txt" data-act="reset-demo" style="color:var(--nav-muted);text-align:left">Restablecer datos de ejemplo</button><button class="linkbtn nf-txt" data-act="reset-blank" style="color:var(--nav-muted);text-align:left">Empezar en blanco</button>` : ''}
     </div>`;
 }
 
@@ -1739,8 +1873,8 @@ const emptyHTML = (ic, t, p, act = '') => `<div class="empty"><div class="art">$
 const signedTotal = d => (ES_CPE(d.tipo) ? (d.tipo === '07' ? -1 : 1) * toPEN(totalOf(d), d.moneda) : 0);   // NV y guías no suman ventas
 function payState(d) {
   if (d.tipo !== '01' || d.formaPago !== 'Credito') return d.tipo === 'COT' ? '' : 'Contado';
-  if (d.cobrado) return 'Cobrado';
-  return (d.cuotas || []).some(q => q.fecha < todayISO()) ? 'Vencido' : 'Por cobrar';
+  const k = estadoCobro(d);
+  return k === 'cobrada' ? 'Cobrado' : k === 'vencida' ? 'Vencido' : 'Por cobrar';
 }
 
 /* ================= INICIO ================= */
@@ -1802,13 +1936,13 @@ function otrosDocsHTML() {
 }
 function pendientes() {
   const t = todayISO(), todo = [];
-  const cred = allDocs().filter(d => d.tipo === '01' && d.formaPago === 'Credito' && d.estado === 'aceptado' && !d.cobrado);
+  const cred = allDocs().filter(d => esCredito(d) && estadoCobro(d) !== 'cobrada');
   sunatDocs().filter(d => d.estado === 'rechazado').forEach(d => todo.push({ ic: 'x', cls: 'bad', t: `${docNum(d)} fue rechazado`, s: `${d.cliente?.nombre || ''} · corrige y emite uno nuevo`, b: `<button class="btn sm" data-act="fix" data-id="${d.id}">Corregir</button>` }));
   cpes().filter(d => guiaPendiente(d)).forEach(d => todo.push({ ic: 'truck', cls: 'warn', t: `Emitir la guía de ${docNum(d)}`, s: `${d.cliente?.nombre || ''} · factura de bienes sin guía de remisión`, b: `<button class="btn sm primary" data-act="gre-de-fac" data-id="${d.id}">${icon('truck', 'sm')}Emitir guía</button>` }));
   sunatDocs().filter(d => d.estado === 'pendiente').forEach(d => todo.push({ ic: 'clock', cls: 'warn', t: `Enviar ${docNum(d)} a SUNAT`, s: `${d.cliente?.nombre || ''}${d.tipo === '09' ? ' · guía de remisión' : ` · ${money(totalOf(d), d.moneda)}`}`, b: `<button class="btn sm primary" data-act="send" data-id="${d.id}">${icon('send', 'sm')}Enviar</button>` }));
   allDocs().filter(d => d.tipo === 'NV' && d.estado === 'emitida').forEach(d => todo.push({ ic: 'tag', cls: 'warn', t: `${docNum(d)} sin comprobante`, s: `${d.cliente?.nombre || ''} · ${money(totalOf(d), d.moneda)} · emite la boleta o factura`, b: `<button class="btn sm dark" data-act="convert" data-id="${d.id}">Convertir</button>` }));
   cots().filter(d => d.estado === 'aprobada').forEach(d => todo.push({ ic: 'coins', cls: '', t: `Facturar ${docNum(d)} (aprobada)`, s: `${d.cliente?.nombre || ''} · ${money(totalOf(d), d.moneda)}`, b: `<button class="btn sm dark" data-act="convert" data-id="${d.id}">Facturar</button>` }));
-  cred.filter(d => (d.cuotas || []).some(q => q.fecha < t)).forEach(d => { const q = d.cuotas.find(q => q.fecha < t); todo.push({ ic: 'alert', cls: 'bad', t: `Cobrar ${docNum(d)}`, s: `Cuota vencida hace ${daysBetween(q.fecha, t)} días · ${money(q.monto, d.moneda)}`, b: `<button class="btn sm" data-act="open" data-id="${d.id}">Ver</button>` }); });
+  cred.filter(d => estadoCobro(d) === 'vencida').forEach(d => { const q = proxCuota(d); todo.push({ ic: 'alert', cls: 'bad', t: `Cobrar ${docNum(d)}`, s: `Cuota vencida hace ${daysBetween(q.fecha, t)} días · ${money(q.falta, d.moneda)}`, b: `<button class="btn sm" data-act="cob-aplicar" data-id="${d.id}">${icon('coins', 'sm')}Aplicar cobro</button>` }); });
   cots().filter(d => d.estado === 'enviada' && d.vence >= t && daysBetween(t, d.vence) <= 3).forEach(d => { const n = daysBetween(t, d.vence); todo.push({ ic: 'calendar', cls: 'warn', t: `${docNum(d)} vence ${n === 0 ? 'hoy' : `en ${n} día${n > 1 ? 's' : ''}`}`, s: `${d.cliente?.nombre || ''} · haz seguimiento`, b: `<button class="btn sm" data-act="open" data-id="${d.id}">Ver</button>` }); });
 
   return todo;
@@ -1831,9 +1965,9 @@ function vReportes() {
   const c90 = all.filter(d => d.tipo === 'COT' && d.estado !== 'borrador' && d.fecha >= desde);
   const conv = c90.filter(d => d.estado === 'facturada');
   const tasa = c90.length ? Math.round((conv.length / c90.length) * 100) : 0;
-  const cred = all.filter(d => d.tipo === '01' && d.formaPago === 'Credito' && d.estado === 'aceptado' && !d.cobrado);
-  const porCobrar = r2(cred.reduce((a, d) => a + toPEN(totalOf(d), d.moneda), 0));
-  const vencido = r2(cred.filter(d => (d.cuotas || []).some(q => q.fecha < t)).reduce((a, d) => a + toPEN(totalOf(d), d.moneda), 0));
+  const cred = all.filter(d => esCredito(d) && estadoCobro(d) !== 'cobrada');
+  const porCobrar = r2(cred.reduce((a, d) => a + toPEN(saldoDe(d), d.moneda), 0));
+  const vencido = r2(cred.filter(d => estadoCobro(d) === 'vencida').reduce((a, d) => a + toPEN(saldoDe(d), d.moneda), 0));
 
   // gráfico: últimos 6 meses
   const months = []; for (let i = 5; i >= 0; i--) { const m = addMonths(ym + '-01', -i).slice(0, 7); months.push(m); }
@@ -1859,6 +1993,7 @@ function vReportes() {
     <div class="kpi"><div class="k-label">Conversión a factura</div><div class="k-val num">${tasa}%</div><div class="k-foot"><b>${conv.length}</b> de ${c90.length} cotizaciones · últimos 90 días</div></div>
     <div class="kpi"><div class="k-label">Por cobrar (crédito)</div><div class="k-val num">${money(porCobrar)}</div><div class="k-foot">${vencido ? `<b style="color:var(--bad)">${money0(vencido)} vencido</b>` : 'Nada vencido'}</div></div>
   </section>
+  ${excelPanelHTML()}
   <div class="dash">
     <div class="col">
       ${ventasVendedorHTML(all, ym)}
@@ -2901,7 +3036,7 @@ function renderDrawer() {
     if (guiaPendiente(d)) A.unshift(`<button class="btn ${d.estado === 'pendiente' ? 'dark' : 'primary'}" data-act="gre-de-fac" data-id="${d.id}">${icon('truck')}Emitir guía de remisión</button>`);
     if (['aceptado', 'observado', 'pendiente'].includes(d.estado)) A.push(`<button class="btn" data-act="pdf" data-id="${d.id}">${icon('pdf')}PDF</button>`, `<button class="btn" data-act="sf-todo" data-id="${d.id}">${icon('download')}PDF + XML + CDR</button>`);
     if (['aceptado', 'observado'].includes(d.estado)) A.push(`<a class="btn" href="${esc(wa)}" target="_blank" rel="noopener">${icon('chat')}WhatsApp</a>`);
-    if (d.tipo === '01' && d.formaPago === 'Credito' && d.estado === 'aceptado' && !d.cobrado) A.push(`<button class="btn dark" data-act="cobrado" data-id="${d.id}">${icon('coins')}Registrar cobro</button>`);
+    if (esCredito(d) && estadoCobro(d) !== 'cobrada') A.push(`<button class="btn dark" data-act="cobrado" data-id="${d.id}">${icon('coins')}Aplicar cobranza</button>`);
     if (['01', '03'].includes(d.tipo) && d.estado === 'aceptado') A.push(`<button class="btn ghost" data-act="nc" data-id="${d.id}">${icon('undo')}Nota de crédito</button>`, `<button class="btn ghost" data-act="nd" data-id="${d.id}">${icon('plusdoc')}Nota de débito</button>`);
     if (ES_CPE(d.tipo) && ['aceptado', 'observado'].includes(d.estado)) A.push(`<button class="btn ghost danger" data-act="baja" data-id="${d.id}">${icon('ban')}Anular en SUNAT</button>`);
     if (d.estado === 'baja_proceso') A.unshift(`<button class="btn dark" data-act="baja-consultar" data-id="${d.id}">${icon('refresh')}Consultar baja</button>`);
@@ -2936,7 +3071,7 @@ function renderDrawer() {
     ${archivosSunatHTML(d)}
     ${d.tipo === '09' ? greSideHTML(d) : ''}
     ${SLd ? `<section class="panel"><div class="panel-h"><h2>Detracción (SPOT)</h2><span class="pill brand">${SLd.sp.porcentaje}%</span></div><div class="panel-b"><dl class="kv"><dt>Tipo</dt><dd>${esc(SLd.sp.codigo)} · ${esc(SLd.sp.desc)}</dd><dt>Monto</dt><dd class="num">${money(SLd.sp.monto)}</dd><dt>Neto a cobrar</dt><dd class="num">${money(SLd.sp.neto, d.moneda)}</dd><dt>Cuenta BN</dt><dd class="num">${esc(DB.cfg.docs.detraccion || '—')}</dd></dl></div></section>` : ''}
-    ${d.tipo === '01' && d.formaPago === 'Credito' ? `<section class="panel"><div class="panel-h"><h2>Cobranza</h2>${d.cobrado ? `<span class="pill ok">${icon('check', 'sm')}Cobrado</span>` : ''}</div><div class="panel-b"><ul class="mini-list" style="margin:0 -18px">${(d.cuotas || []).map((q, i) => `<li style="cursor:default"><div class="m-main"><b>Cuota ${i + 1}</b><small>Vence ${fmtDate(q.fecha)}</small></div>${!d.cobrado && q.fecha < t ? `<span class="pill bad">${icon('alert', 'sm')}Vencida</span>` : ''}<span class="m-amt num">${money(q.monto, d.moneda)}</span></li>`).join('')}</ul></div></section>` : ''}
+    ${cobranzaPanelHTML(d)}
     ${origen || refd || ncs.length || guiasRel.length || guiasPost.length || facDeGuia.length || (fact && !isCot && d.tipo !== 'NV') ? `<section class="panel"><div class="panel-h"><h2>Relacionados</h2></div><div class="panel-b"><dl class="kv">${origen ? `<dt>${origen.tipo === 'NV' ? 'Nota de venta' : 'Cotización'}</dt><dd><button class="linkbtn" data-act="open" data-id="${origen.id}">${docNum(origen)}</button></dd>` : ''}${refd ? `<dt>Modifica a</dt><dd><button class="linkbtn" data-act="open" data-id="${refd.id}">${docNum(refd)}</button></dd>` : ''}${guiasPost.map(g => `<dt>Guía de remisión</dt><dd><button class="linkbtn" data-act="open" data-id="${g.id}">${docNum(g)}</button> <span class="faint">emitida después · ${esc(PILL_CPE[g.estado]?.[2] || g.estado)}</span></dd>`).join('')}${guiasRel.map(({ g, doc }) => `<dt>Guía de remisión</dt><dd>${doc ? `<button class="linkbtn" data-act="open" data-id="${doc.id}">${docNum(doc)}</button>` : `<span class="num">${esc(g.serie)}-${pad(g.numero, 8)}</span> <span class="faint">externa</span>`}</dd>`).join('')}${facDeGuia.map(f => `<dt>Facturada en</dt><dd><button class="linkbtn" data-act="open" data-id="${f.id}">${docNum(f)}</button> <span class="faint">${money(totalOf(f), f.moneda)}</span></dd>`).join('')}${ncs.map(n => `<dt>${TIPOS[n.tipo].corto}</dt><dd><button class="linkbtn" data-act="open" data-id="${n.id}">${docNum(n)}</button> <span class="faint">${n.tipo === '07' ? '−' : '+'} ${money(totalOf(n), n.moneda)}</span></dd>`).join('')}</dl></div></section>` : ''}
     ${historialDocHTML(d)}
     ${d.estado !== 'borrador' ? `<details class="more" id="xml-det"><summary>${icon('code')}XML UBL 2.1${d.tipo === '09' ? ' · DespatchAdvice' : ''}${xmlGuardado(d) ? ' · firmado' : ''}${icon('chev')}</summary><div class="inner"><div class="code" id="xml-view">${hlXML(xmlGuardado(d) || buildXML(d, DB.cfg))}</div><div class="row-gap" style="margin-top:10px"><button class="btn sm" data-act="copy-xml" data-id="${d.id}">${icon('copy', 'sm')}Copiar XML</button><button class="btn sm" data-act="sf-xml" data-id="${d.id}">${icon('download', 'sm')}Descargar XML</button><span class="hint" id="xml-hint">${xmlGuardado(d) ? 'Firmado digitalmente: es el XML que recibió SUNAT.' : 'Sin firma: tu API agrega la firma XMLDSig al enviar.'}</span></div></div></details>` : ''}`;
@@ -3358,7 +3493,8 @@ const ACT = {
     catch { clearTimeout(lento); show(`<span style="color:var(--bad)">Sin respuesta${window.claude ? ': en Claude las conexiones externas están bloqueadas' : ''}</span>`); }
     clearTimeout(to); $('[data-act="test-api"]')?.classList.remove('loading'); el.classList.remove('loading'); loadPadronEstado();
   },
-  'reset-demo': async () => { if (await confirmDlg({ title: '¿Borrar todos los datos de prueba?', body: 'Se borran los documentos, clientes, productos, historial y PDF de este navegador. La numeración vuelve a empezar desde el N.° 1. Se conservan los datos de Master Steel y la conexión con la API.', ok: 'Borrar todo', danger: true })) { try { const r = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); localStorage.setItem(LS_KEY, JSON.stringify({ epoca: DATOS_EPOCA, cfg: limpiarCfgDemo(r?.cfg), logo: r?.logo || null })); indexedDB.deleteDatabase('granate-archivo'); } catch { /* */ } location.hash = 'inicio'; location.reload(); } },
+  'reset-demo': async () => { if (await confirmDlg({ title: '¿Restablecer los datos de ejemplo?', body: 'Se borra lo que hiciste en esta versión de prueba y se vuelven a cargar los 12 meses de ejemplo de LanAI Demo S.A.C. Se conserva la conexión con la API.', ok: 'Restablecer', danger: true })) { try { localStorage.setItem(LS_KEY, JSON.stringify({ epoca: 'reiniciar', cfg: DB.cfg })); indexedDB.deleteDatabase('granate-archivo'); } catch { /* */ } location.hash = 'inicio'; location.reload(); } },
+  'reset-blank': async () => { if (await confirmDlg({ title: '¿Empezar en blanco?', body: 'Se borran los documentos, clientes, productos, cobranzas e historial de este navegador. Se conservan los datos de la empresa de ejemplo, su logo y la conexión con la API. La numeración empieza en el N.° 1.', ok: 'Borrar todo', danger: true })) { try { localStorage.setItem(LS_KEY, JSON.stringify({ epoca: DATOS_EPOCA, cfg: DB.cfg, logo: DB.logo })); indexedDB.deleteDatabase('granate-archivo'); } catch { /* */ } location.hash = 'inicio'; location.reload(); } },
   'del-demo': async () => {
     if (!(await confirmDlg({ title: '¿Eliminar los datos de demostración?', body: 'Se borran los clientes, productos y documentos ficticios. Tus datos reales no se tocan.', ok: 'Eliminar datos demo', danger: true }))) return;
     for (const col of ['documentos', 'clientes', 'productos']) for (const o of [...DB.cols[col].values()]) if (o.demo) await remove(col, o.id);
@@ -3924,6 +4060,309 @@ document.addEventListener('change', ev => {
   if (t.matches('[data-tr]') && t.tagName === 'SELECT') { E.doc.traslado[t.dataset.tr] = t.value; markDirty(); $('#ed-tras').innerHTML = trasladoHTML(); refreshGRE(true); return; }
   if (t.matches('[data-tr-bool]')) { E.doc.traslado[t.dataset.trBool] = t.checked; markDirty(); $('#ed-transp').innerHTML = transpHTML(); refreshGRE(true); return; }
   if (t.matches('[data-gre-rel]')) { const [tipo, serie, numero] = t.value.split('|'); E.doc.docRel = t.value ? { tipo, serie, numero: Number(numero) } : null; markDirty(); refreshGRE(true); return; }
+});
+
+/* ================= COBRANZAS =================
+   Seguimiento de las facturas al crédito y registro de pagos (parciales o totales) con la foto del voucher o de la
+   constancia. El saldo de cada factura es lo que el cliente debe depositar en la empresa: las cuotas (si la factura
+   tiene detracción, ya vienen netas) menos lo cobrado. Al cubrir el saldo, la factura queda «Cobrada».
+   Las fotos se guardan en este equipo (IndexedDB) en la versión de prueba; con usuario, viajan con el documento. */
+const esCredito = d => d?.tipo === '01' && d.formaPago === 'Credito' && ['aceptado', 'observado'].includes(d.estado);
+const cobrableDe = d => r2((d.cuotas || []).reduce((a, q) => a + (Number(q.monto) || 0), 0) || d.totales?.neto || totalOf(d));
+const pagadoDe = d => r2((d.pagos || []).reduce((a, p) => a + (Number(p.monto) || 0), 0));
+const saldoDe = d => (d.cobrado ? 0 : Math.max(0, r2(cobrableDe(d) - pagadoDe(d))));
+/* Cuotas con lo que falta de cada una (los pagos se aplican a la cuota más antigua) */
+function cuotasPendientes(d) {
+  let resto = pagadoDe(d);
+  return (d.cuotas || []).map((q, i) => { const m = Number(q.monto) || 0, cubre = Math.min(m, Math.max(0, resto)); resto -= cubre; return { n: i + 1, fecha: q.fecha, monto: m, falta: d.cobrado ? 0 : r2(m - cubre) }; });
+}
+function estadoCobro(d) {
+  if (!esCredito(d)) return '';
+  if (d.cobrado || saldoDe(d) <= 0.005) return 'cobrada';
+  const t = todayISO(), q = cuotasPendientes(d).find(x => x.falta > 0.005);
+  if (q && q.fecha < t) return 'vencida';
+  if (q && daysBetween(t, q.fecha) <= 7) return 'porvencer';
+  return pagadoDe(d) > 0 ? 'parcial' : 'alDia';
+}
+const COBRO_PILL = { cobrada: ['ok', 'check', 'Cobrada'], vencida: ['bad', 'alert', 'Vencida'], porvencer: ['warn', 'clock', 'Vence pronto'], parcial: ['brand', 'coins', 'Pago parcial'], alDia: ['neutral', 'calendar', 'Al día'] };
+const proxCuota = d => cuotasPendientes(d).find(x => x.falta > 0.005) || null;
+const diasAtraso = d => { const q = proxCuota(d), t = todayISO(); return q && q.fecha < t ? daysBetween(q.fecha, t) : 0; };
+
+function vCobranzas() {
+  const t = todayISO(), ym = t.slice(0, 7);
+  const cred = allDocs().filter(esCredito).sort((a, b) => (proxCuota(a)?.fecha || '9').localeCompare(proxCuota(b)?.fecha || '9'));
+  const abiertas = cred.filter(d => estadoCobro(d) !== 'cobrada');
+  const pen = d => toPEN(saldoDe(d), d.moneda);
+  const porCobrar = r2(abiertas.reduce((a, d) => a + pen(d), 0)), vencido = r2(abiertas.filter(d => estadoCobro(d) === 'vencida').reduce((a, d) => a + pen(d), 0));
+  const pagosMes = cred.flatMap(d => (d.pagos || []).filter(p => String(p.fecha).startsWith(ym)).map(p => ({ d, p })));
+  const cobradoMes = r2(pagosMes.reduce((a, x) => a + toPEN(x.p.monto, x.d.moneda), 0));
+  const F = UI.cobF || 'abiertas', V = UI.cobV || '', q = String(UI.cobQ || '').trim().toLowerCase();
+  const filtros = [['abiertas', 'Por cobrar'], ['vencida', 'Vencidas'], ['porvencer', 'Vencen en 7 días'], ['parcial', 'Pago parcial'], ['cobrada', 'Cobradas'], ['todas', 'Todas']];
+  const pasa = (d, k) => k === 'todas' || (k === 'abiertas' ? estadoCobro(d) !== 'cobrada' : k === 'parcial' ? estadoCobro(d) !== 'cobrada' && pagadoDe(d) > 0 : estadoCobro(d) === k);
+  const base = cred.filter(d => !V || (d.vendedor || 'Sin responsable') === V).filter(d => !q || docNum(d).toLowerCase().includes(q) || (d.cliente?.nombre || '').toLowerCase().includes(q) || (d.cliente?.numDoc || '').includes(q));
+  const rows = base.filter(d => pasa(d, F)).sort((a, b) => F === 'cobrada' ? (b.cobradoFecha || '').localeCompare(a.cobradoFecha || '') : 0);
+  const vendedores = [...new Set([...(DB.cfg.vendedores || []), ...cred.map(d => d.vendedor || 'Sin responsable')])].filter(Boolean);
+  const pill = k => { const [c, i, l] = COBRO_PILL[k] || COBRO_PILL.alDia; return `<span class="pill ${c}">${icon(i, 'sm')}${l}</span>`; };
+  const ultimos = cred.flatMap(d => (d.pagos || []).map(p => ({ d, p }))).filter(x => !V || (x.d.vendedor || 'Sin responsable') === V).sort((a, b) => (b.p.ts || b.p.fecha).localeCompare(a.p.ts || a.p.fecha)).slice(0, 8);
+  return `
+  <div class="page-head"><div><h1>Cobranzas</h1><p class="sub">Facturas al crédito: lo que falta cobrar, lo vencido y los pagos aplicados con su voucher.</p></div>
+    <div class="head-actions"><button class="btn" data-act="cob-excel">${icon('download')}Excel de cobranzas</button></div></div>
+  <section class="kpis" aria-label="Indicadores de cobranza">
+    <div class="kpi"><div class="k-label">Por cobrar</div><div class="k-val num">${money(porCobrar)}</div><div class="k-foot">${abiertas.length} factura${abiertas.length === 1 ? '' : 's'} abiertas</div></div>
+    <div class="kpi"><div class="k-label">Vencido</div><div class="k-val num" style="${vencido ? 'color:var(--bad)' : ''}">${money(vencido)}</div><div class="k-foot">${abiertas.filter(d => estadoCobro(d) === 'vencida').length} con cuota vencida</div></div>
+    <div class="kpi"><div class="k-label">Cobrado en ${MESES[parseISO(t).getMonth()]}</div><div class="k-val num">${money(cobradoMes)}</div><div class="k-foot">${pagosMes.length} pago${pagosMes.length === 1 ? '' : 's'} aplicado${pagosMes.length === 1 ? '' : 's'}</div></div>
+    <div class="kpi"><div class="k-label">Clientes con deuda</div><div class="k-val num">${new Set(abiertas.map(d => d.cliente?.numDoc || d.cliente?.nombre)).size}</div><div class="k-foot">Soles; los dólares al T.C. ${DB.cfg.tipoCambio}</div></div>
+  </section>
+  <div class="toolbar">
+    <div class="chips" role="group" aria-label="Estado de cobro">${filtros.map(([k, l]) => `<button class="chip" data-act="cobf" data-f="${k}" aria-pressed="${F === k}">${l}<span class="count">${base.filter(d => pasa(d, k)).length}</span></button>`).join('')}</div>
+    <select class="select" data-cobv aria-label="Vendedor" style="width:auto;min-width:210px"><option value="">Todos los vendedores</option>${vendedores.map(v => `<option ${v === V ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>
+    <div class="search">${icon('search')}<input class="input" id="q-cob" data-search="cobQ" placeholder="Buscar cliente o número" value="${esc(UI.cobQ || '')}" aria-label="Buscar en cobranzas"></div>
+  </div>
+  <section class="panel">${rows.length ? `<div class="table-wrap"><table class="t"><thead><tr><th>Factura</th><th>Cliente</th><th class="hide-sm">Vence</th><th class="num hide-md">Cobrado</th><th class="num">Saldo</th><th class="hide-sm">Estado</th><th class="act"><span class="sr">Acciones</span></th></tr></thead><tbody>
+    ${rows.map(d => { const k = estadoCobro(d), qq = proxCuota(d), at = diasAtraso(d); return `<tr data-act="open" data-id="${d.id}">
+      <td class="docid">${docNum(d)}<small style="display:block;font-weight:400;color:var(--text-3);font-size:var(--fs-xs)">${esc(d.vendedor || 'Sin responsable')}</small></td>
+      <td class="who">${esc(d.cliente?.nombre || '—')}<small>${fmtDate(d.fecha)} · ${money(cobrableDe(d), d.moneda)}</small></td>
+      <td class="hide-sm">${qq ? `${fmtDate(qq.fecha)}${at ? `<small style="display:block;color:var(--bad);font-weight:600">${at} día${at === 1 ? '' : 's'} de atraso</small>` : ''}` : `<span class="faint">${d.cobradoFecha ? 'Cobrada ' + fmtDate(d.cobradoFecha) : '—'}</span>`}</td>
+      <td class="num hide-md">${money(pagadoDe(d), d.moneda)}</td>
+      <td class="num"><b>${money(saldoDe(d), d.moneda)}</b></td>
+      <td class="hide-sm">${pill(k)}</td>
+      <td class="act">${k !== 'cobrada' ? `<button class="btn sm primary" data-act="cob-aplicar" data-id="${d.id}">${icon('coins', 'sm')}Aplicar</button>` : `<button class="btn sm" data-act="open" data-id="${d.id}">Ver</button>`}</td></tr>`; }).join('')}
+  </tbody></table></div>` : emptyHTML('coins', cred.length ? 'Nada por aquí' : 'Aún no hay ventas al crédito', cred.length ? 'Prueba con otro filtro, vendedor o búsqueda.' : 'Cuando emitas una factura al crédito, aquí verás sus cuotas y podrás aplicar los pagos.')}</section>
+  ${ultimos.length ? `<section class="panel" style="margin-top:16px"><div class="panel-h"><h2>Últimos pagos aplicados</h2><span class="hint">Toca la foto para ver el voucher</span></div><div style="padding-top:8px"><ul class="mini-list">${ultimos.map(({ d, p }) => `<li data-act="open" data-id="${d.id}"><button class="vou-th" data-act="cob-voucher" data-id="${d.id}" data-p="${p.id}" aria-label="Ver voucher de ${esc(docNum(d))}">${icon('receipt')}</button><div class="m-main"><b>${docNum(d)} · ${esc(d.cliente?.nombre || '')}</b><small>${fmtDate(p.fecha)} · ${esc(p.medio)}${p.operacion ? ` · op. ${esc(p.operacion)}` : ''} · ${esc(p.vendedor || '')}</small></div><span class="m-amt num">${money(p.monto, d.moneda)}</span></li>`).join('')}</ul></div></section>` : ''}`;
+}
+
+/* Panel «Cobranza» del detalle de la factura */
+function cobranzaPanelHTML(d) {
+  if (!(d.tipo === '01' && d.formaPago === 'Credito')) return '';
+  const k = estadoCobro(d), [c, i, l] = COBRO_PILL[k] || COBRO_PILL.alDia, t = todayISO();
+  return `<section class="panel"><div class="panel-h"><h2>Cobranza</h2>${k ? `<span class="pill ${c}">${icon(i, 'sm')}${l}</span>` : ''}</div><div class="panel-b">
+    <dl class="kv"><dt>A cobrar</dt><dd class="num">${money(cobrableDe(d), d.moneda)}${d.totales?.detraccion ? ' <span class="faint">(neto de detracción)</span>' : ''}</dd><dt>Cobrado</dt><dd class="num">${money(pagadoDe(d), d.moneda)}</dd><dt>Saldo</dt><dd class="num"><b>${money(saldoDe(d), d.moneda)}</b></dd></dl>
+    <ul class="mini-list" style="margin:8px -18px 0">${cuotasPendientes(d).map(q => `<li style="cursor:default"><div class="m-main"><b>Cuota ${q.n}</b><small>Vence ${fmtDate(q.fecha)}${q.falta > 0.005 && q.falta < q.monto ? ` · falta ${money(q.falta, d.moneda)}` : ''}</small></div>${q.falta <= 0.005 ? `<span class="pill ok">${icon('check', 'sm')}Pagada</span>` : q.fecha < t ? `<span class="pill bad">${icon('alert', 'sm')}Vencida</span>` : ''}<span class="m-amt num">${money(q.monto, d.moneda)}</span></li>`).join('')}</ul>
+    ${(d.pagos || []).length ? `<h3 class="cob-h">Pagos aplicados</h3><ul class="mini-list" style="margin:0 -18px">${d.pagos.map(p => `<li style="cursor:default"><button class="vou-th" data-act="cob-voucher" data-id="${d.id}" data-p="${p.id}" aria-label="Ver voucher">${icon('receipt')}</button><div class="m-main"><b>${fmtDate(p.fecha)} · ${esc(p.medio)}</b><small>${esc(p.cuenta || '')}${p.operacion ? ` · op. ${esc(p.operacion)}` : ''}${p.nota ? ` · ${esc(p.nota)}` : ''}</small></div><span class="m-amt num">${money(p.monto, d.moneda)}</span></li>`).join('')}</ul>` : ''}
+    ${k !== 'cobrada' ? `<button class="btn primary" style="margin-top:12px;width:100%" data-act="cob-aplicar" data-id="${d.id}">${icon('coins')}Aplicar cobranza</button>` : ''}
+  </div></section>`;
+}
+
+/* ---------- modal «Aplicar cobranza» ---------- */
+let COB = null;
+function cobranzaModal(id) {
+  const d = getDoc(id); if (!d) return;
+  if (!esCredito(d)) { toast('Solo se aplican cobranzas a facturas al crédito aceptadas por SUNAT.', 'warn'); return; }
+  const saldo = saldoDe(d); if (saldo <= 0.005) { toast(`${docNum(d)} ya está cobrada.`); return; }
+  COB = { id, foto: null };
+  const cuentas = (DB.cfg.docs.cuentas || []).filter(c => !c.moneda || c.moneda === (d.moneda || 'PEN'));
+  const sym = d.moneda === 'USD' ? 'US$' : 'S/';
+  openModal(`<div class="modal-h"><h2>Aplicar cobranza</h2><button class="btn ghost icon-only" data-act="modal-close" aria-label="Cerrar">${icon('x')}</button></div>
+    <div class="modal-b">
+      <div class="cob-res"><div><b>${docNum(d)}</b><small>${esc(d.cliente?.nombre || '')}</small></div><div class="num" style="text-align:right"><small>Saldo</small><b>${money(saldo, d.moneda)}</b></div></div>
+      <div class="grid g2">
+        <div class="field"><label for="cb-monto">Monto cobrado (${sym})</label><input class="input num" id="cb-monto" inputmode="decimal" value="${saldo.toFixed(2)}" autocomplete="off"><span class="hint">Puede ser un pago parcial</span></div>
+        <div class="field"><label for="cb-fecha">Fecha del pago</label><input class="input" id="cb-fecha" type="date" value="${todayISO()}" max="${todayISO()}"></div>
+        <div class="field"><label for="cb-medio">Medio de pago</label><select class="select" id="cb-medio">${MEDIOS_PAGO.map(m => `<option>${m}</option>`).join('')}</select></div>
+        <div class="field"><label for="cb-cuenta">Cuenta de destino</label><select class="select" id="cb-cuenta">${cuentas.map(c => `<option>${esc(`${c.banco} ${c.moneda === 'USD' ? 'US$' : 'S/'} · ${c.numero}`)}</option>`).join('')}<option>Caja (efectivo)</option><option>Otra cuenta</option></select></div>
+        <div class="field"><label for="cb-op">N.° de operación</label><input class="input num" id="cb-op" inputmode="numeric" autocomplete="off" placeholder="Del voucher o constancia"><span class="hint" id="cb-op-hint">Obligatorio en transferencias y depósitos</span></div>
+        <div class="field"><label for="cb-nota">Nota <span class="faint">(opcional)</span></label><input class="input" id="cb-nota" maxlength="120" placeholder="Ej.: pagó la cuota 1"></div>
+        <div class="field spanall"><span class="lbl">Foto del voucher o constancia de pago <span style="color:var(--bad)">*</span></span>
+          <label class="cob-foto" id="cb-foto-box"><input type="file" id="cb-foto" accept="image/*" hidden><span class="cob-foto-vacio">${icon('upload')}<b>Toma una foto o elige una imagen</b><small>Voucher del banco, captura de Yape/Plin, recibo de caja o cheque. Es obligatoria para aplicar el pago.</small></span></label></div>
+      </div><div id="cb-err"></div></div>
+    <div class="modal-f"><button class="btn" data-act="modal-close">Cancelar</button><button class="btn primary" data-act="cob-guardar">${icon('check')}Aplicar pago</button></div>`);
+}
+/* Reduce la foto a ~1200 px y JPEG para que ocupe poco (un voucher sigue legible) */
+function comprimirFoto(file) {
+  return new Promise((ok, ko) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.naturalWidth, h = img.naturalHeight, out = null;
+      for (const [max, q] of [[1400, 0.72], [1200, 0.65], [1000, 0.6], [800, 0.55]]) {
+        const k = Math.min(1, max / Math.max(w, h)), cw = Math.round(w * k), ch = Math.round(h * k);
+        const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch; const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cw, ch); g.drawImage(img, 0, 0, cw, ch);
+        out = { dataUrl: cv.toDataURL('image/jpeg', q), w: cw, h: ch }; if (out.dataUrl.length < 320000) break;
+      }
+      ok(out);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); ko(new Error('imagen')); };
+    img.src = url;
+  });
+}
+document.addEventListener('change', async ev => {
+  const t = ev.target;
+  if (t.matches('[data-cobv]')) { UI.cobV = t.value; render(); return; }
+  if (t.id === 'cb-medio') { const ef = t.value === 'Efectivo', c = $('#cb-cuenta'); if (c && ef) c.value = 'Caja (efectivo)'; const h = $('#cb-op-hint'); if (h) h.textContent = ['Transferencia', 'Depósito en cuenta'].includes(t.value) ? 'Obligatorio en transferencias y depósitos' : 'Opcional'; return; }
+  if (t.id !== 'cb-foto' || !COB) return;
+  const f = t.files && t.files[0]; if (!f) return;
+  const box = $('#cb-foto-box');
+  try {
+    COB.foto = await comprimirFoto(f);
+    if (box) box.innerHTML = `<input type="file" id="cb-foto" accept="image/*" hidden><img src="${COB.foto.dataUrl}" alt="Voucher adjunto"><span class="cob-foto-ok">${icon('check', 'sm')}Foto lista · toca para cambiarla</span>`;
+  } catch { toast('No se pudo leer la imagen. Prueba con otra foto.', 'bad'); }
+});
+async function guardarCobranza(btn) {
+  const d0 = COB && getDoc(COB.id); if (!d0) return;
+  const err = $('#cb-err'), muestra = m => { if (err) err.innerHTML = `<div class="alert bad" style="margin-top:12px">${icon('alert')}<div>${m}</div></div>`; };
+  const saldo = saldoDe(d0), monto = r2(Number(String($('#cb-monto')?.value || '').replace(/[^\d.]/g, '')) || 0);
+  const fecha = $('#cb-fecha')?.value || todayISO(), medio = $('#cb-medio')?.value || 'Transferencia', cuenta = $('#cb-cuenta')?.value || '', operacion = String($('#cb-op')?.value || '').trim(), nota = String($('#cb-nota')?.value || '').trim();
+  if (!(monto > 0)) return muestra('Ingresa el monto cobrado.');
+  if (monto > saldo + 0.01) return muestra(`El monto supera el saldo de ${money(saldo, d0.moneda)}. Si el cliente pagó de más, registra solo el saldo y anota la diferencia.`);
+  if (fecha > todayISO() || fecha < d0.fecha) return muestra(`La fecha del pago debe estar entre la emisión (${fmtDate(d0.fecha)}) y hoy.`);
+  if (['Transferencia', 'Depósito en cuenta'].includes(medio) && !operacion) return muestra('Anota el número de operación que figura en el voucher.');
+  if (!COB.foto) return muestra('Adjunta la foto del voucher o de la constancia de pago: sin ella no se aplica el cobro.');
+  btn?.classList.add('loading');
+  try {
+    const p = { id: uid(), fecha, monto, moneda: d0.moneda || 'PEN', medio, cuenta, operacion, nota, vendedor: d0.vendedor || '', por: DB.uid || d0.vendedor || 'Este equipo', ts: new Date().toISOString() };
+    if (DB.mode === 'local') { const b = await (await fetch(COB.foto.dataUrl)).blob(); await idbPut(`voucher:${p.id}`, b); p.voucherKey = `voucher:${p.id}`; }
+    else p.voucher = COB.foto;
+    const d = clone(d0); d.pagos = [...(d.pagos || []), p];
+    if (saldoDe(d) <= 0.005) { d.cobrado = true; d.cobradoFecha = fecha; }
+    await put('documentos', d);
+    logEvent('cobro.registrado', d, `${money(monto, d.moneda)} · ${medio}${operacion ? ` · op. ${operacion}` : ''}${d.cobrado ? ' · factura cobrada' : ` · saldo ${money(saldoDe(d), d.moneda)}`}`);
+    closeModal(); COB = null;
+    toast(d.cobrado ? `${docNum(d)} quedó cobrada` : `Pago aplicado a ${docNum(d)} · saldo ${money(saldoDe(d), d.moneda)}`);
+    render(); if (D && D.id === d.id && typeof renderDrawer === 'function') renderDrawer();
+  } catch (e) { console.warn(e); muestra('No se pudo guardar el pago. Inténtalo de nuevo.'); }
+  btn?.classList.remove('loading');
+}
+/* Voucher de ejemplo (datos demo): se dibuja al vuelo a partir del pago */
+function voucherDemo(d, p) {
+  const W = 720, H = 980, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
+  const banco = String(p.cuenta || '').split(' ')[0] || 'Banco', yape = /Yape|Plin/.test(p.medio);
+  g.fillStyle = yape ? '#742284' : '#0F3B4C'; g.fillRect(0, 0, W, 170);
+  g.fillStyle = '#fff'; g.font = '700 44px Inter, Arial, sans-serif'; g.fillText(yape ? p.medio : banco, 48, 88);
+  g.font = '500 24px Inter, Arial, sans-serif'; g.fillText(yape ? '¡Pago exitoso!' : 'Constancia de operación', 48, 132);
+  g.fillStyle = '#F4F7F8'; g.fillRect(0, 170, W, H - 170);
+  g.fillStyle = '#fff'; g.fillRect(36, 206, W - 72, H - 280);
+  g.fillStyle = '#0F3B4C'; g.font = '800 64px Inter, Arial, sans-serif'; g.fillText(money(p.monto, d.moneda), 72, 310);
+  const fila = (y, k, v) => { g.fillStyle = '#5B7480'; g.font = '500 24px Inter, Arial, sans-serif'; g.fillText(k, 72, y); g.fillStyle = '#16232A'; g.font = '600 26px Inter, Arial, sans-serif'; g.fillText(String(v).slice(0, 40), 72, y + 36); };
+  fila(390, 'Fecha', `${fmtDate(p.fecha)} ${String(p.ts || '').slice(11, 16)}`);
+  fila(480, 'Medio', p.medio);
+  fila(570, 'Destino', DB.cfg.empresa.razon || '');
+  fila(660, 'Cuenta', p.cuenta || '—');
+  fila(750, 'N.° de operación', p.operacion || '—');
+  fila(840, 'Referencia', `${docNum(d)} · ${d.cliente?.nombre || ''}`);
+  g.save(); g.translate(W / 2, H / 2 + 60); g.rotate(-0.42); g.fillStyle = 'rgba(194,65,12,.16)'; g.font = '900 110px Inter, Arial, sans-serif'; g.textAlign = 'center'; g.fillText('EJEMPLO', 0, 0); g.restore();
+  return cv.toDataURL('image/jpeg', 0.82);
+}
+async function voucherURL(d, p) {
+  if (p.voucher?.dataUrl) return p.voucher.dataUrl;
+  if (p.voucherKey) { try { const b = await idbGet(p.voucherKey); if (b) return URL.createObjectURL(b); } catch { /* */ } }
+  if (p.voucherDemo) return voucherDemo(d, p);
+  return '';
+}
+async function verVoucher(id, pid) {
+  const d = getDoc(id), p = d && (d.pagos || []).find(x => x.id === pid); if (!p) return;
+  const url = await voucherURL(d, p);
+  openModal(`<div class="modal-h"><h2>Voucher · ${docNum(d)}</h2><button class="btn ghost icon-only" data-act="modal-close" aria-label="Cerrar">${icon('x')}</button></div>
+    <div class="modal-b">${url ? `<img class="vou-img" src="${url}" alt="Voucher del pago de ${esc(money(p.monto, d.moneda))}">` : `<div class="alert warn">${icon('alert')}<div>La foto de este pago no está en este equipo.</div></div>`}
+      <dl class="kv" style="margin-top:12px"><dt>Monto</dt><dd class="num">${money(p.monto, d.moneda)}</dd><dt>Fecha</dt><dd>${fmtDate(p.fecha)}</dd><dt>Medio</dt><dd>${esc(p.medio)}</dd><dt>Cuenta</dt><dd>${esc(p.cuenta || '—')}</dd><dt>Operación</dt><dd class="num">${esc(p.operacion || '—')}</dd><dt>Registró</dt><dd>${esc(p.por || p.vendedor || '—')}</dd>${p.nota ? `<dt>Nota</dt><dd>${esc(p.nota)}</dd>` : ''}</dl></div>
+    <div class="modal-f">${url ? `<a class="btn" href="${url}" download="voucher-${esc(docNum(d))}-${p.fecha}.jpg">${icon('download')}Descargar</a>` : ''}<button class="btn primary" data-act="modal-close">Cerrar</button></div>`, true);
+}
+
+/* ================= EXCEL (.xlsx) =================
+   Libro de Excel real (Office Open XML) armado en el navegador con JSZip: varias hojas, encabezados en negrita,
+   fechas como fecha, montos con 2 decimales, filtros y la primera fila fija. */
+function xlsxCol(n) { let s = ''; n++; while (n) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; }
+const xmlEsc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+const xlsxFecha = iso => { if (!iso) return null; const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number); return (Date.UTC(y, m - 1, d) - Date.UTC(1899, 11, 30)) / 864e5; };
+async function xlsxBlob(hojas) {
+  await loadLib('zip'); const z = new window.JSZip();
+  const ST = { s: 0, h: 1, n: 2, m: 3, d: 4, e: 5 }; // texto, encabezado, entero, monto, fecha, monto en negrita
+  const hoja = H => {
+    const cols = H.cols, filas = [cols.map(c => c.h), ...H.rows];
+    const rowsXml = filas.map((r, ri) => `<row r="${ri + 1}">${r.map((v, ci) => {
+      const ref = `${xlsxCol(ci)}${ri + 1}`, tipo = ri === 0 ? 'h' : cols[ci].t || 's';
+      if (v === null || v === undefined || v === '') return ri === 0 ? `<c r="${ref}" s="${ST.h}"/>` : '';
+      if (ri > 0 && tipo === 'd') { const n = xlsxFecha(v); return n === null ? '' : `<c r="${ref}" s="${ST.d}"><v>${n}</v></c>`; }
+      if (ri > 0 && ['n', 'm', 'e'].includes(tipo) && isFinite(Number(v))) return `<c r="${ref}" s="${ST[tipo]}"><v>${Number(v)}</v></c>`;
+      return `<c r="${ref}" s="${ri === 0 ? ST.h : ST.s}" t="inlineStr"><is><t xml:space="preserve">${xmlEsc(v)}</t></is></c>`;
+    }).join('')}</row>`).join('');
+    const ult = `${xlsxCol(cols.length - 1)}${filas.length}`;
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${cols.map((c, i) => `<col min="${i + 1}" max="${i + 1}" width="${c.w || 14}" customWidth="1"/>`).join('')}</cols><sheetData>${rowsXml}</sheetData>${filas.length > 1 ? `<autoFilter ref="A1:${ult}"/>` : ''}</worksheet>`;
+  };
+  const nombres = hojas.map((h, i) => xmlEsc(String(h.name).replace(/[\\/?*[\]:]/g, ' ').slice(0, 31) || `Hoja${i + 1}`));
+  z.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${hojas.map((h, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`);
+  z.file('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`);
+  z.file('xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${nombres.map((n, i) => `<sheet name="${n}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('')}</sheets>${hojas.some(h => h.rows.length) ? `<definedNames>${hojas.map((h, i) => h.rows.length ? `<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">'${nombres[i].replace(/'/g, "''")}'!$A$1:$${xlsxCol(h.cols.length - 1)}$${h.rows.length + 1}</definedName>` : '').join('')}</definedNames>` : ''}</workbook>`);
+  z.file('xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${hojas.map((h, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('')}<Relationship Id="rId${hojas.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`);
+  z.file('xl/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="#,##0.00"/><numFmt numFmtId="165" formatCode="dd/mm/yyyy"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0F3B4C"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="6"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="1" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="164" fontId="1" fillId="2" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`);
+  hojas.forEach((h, i) => z.file(`xl/worksheets/sheet${i + 1}.xml`, hoja(h)));
+  return z.generateAsync({ type: 'blob', compression: 'DEFLATE', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+const PERIODOS_XLS = [['mes', 'Este mes'], ['anterior', 'Mes anterior'], ['3m', 'Últimos 3 meses'], ['anio', 'Este año'], ['12m', 'Últimos 12 meses']];
+function rangoPeriodo(k) {
+  const t = todayISO(), ini = t.slice(0, 7) + '-01';
+  if (k === 'anterior') { const a = addMonths(ini, -1); return [a, addDays(ini, -1), 'mes-anterior']; }
+  if (k === '3m') return [addMonths(ini, -2), t, 'ultimos-3-meses'];
+  if (k === 'anio') return [t.slice(0, 4) + '-01-01', t, t.slice(0, 4)];
+  if (k === '12m') return [addMonths(ini, -11), t, 'ultimos-12-meses'];
+  return [ini, t, t.slice(0, 7)];
+}
+const ESTADO_TXT = { aceptado: 'Aceptado', observado: 'Aceptado con observaciones', pendiente: 'Por enviar', rechazado: 'Rechazado', anulado: 'Anulado (baja)', baja_proceso: 'Baja en proceso', borrador: 'Borrador', emitida: 'Emitida', convertida: 'Convertida', enviada: 'Enviada', aprobada: 'Aprobada', rechazada: 'Rechazada', facturada: 'Facturada' };
+function hojasCobranza(desde, hasta) {
+  const t = todayISO(), cred = allDocs().filter(esCredito);
+  const cxc = cred.filter(d => !d.cobrado && saldoDe(d) > 0.005).map(d => { const q = proxCuota(d); return [docNum(d), d.fecha, d.cliente?.numDoc || '', d.cliente?.nombre || '', d.vendedor || '', d.moneda || 'PEN', cobrableDe(d), pagadoDe(d), saldoDe(d), r2(toPEN(saldoDe(d), d.moneda)), q?.fecha || '', diasAtraso(d), (COBRO_PILL[estadoCobro(d)] || [])[2] || '']; });
+  const pagos = cred.flatMap(d => (d.pagos || []).filter(p => (!desde || p.fecha >= desde) && (!hasta || p.fecha <= hasta)).map(p => [p.fecha, docNum(d), d.cliente?.numDoc || '', d.cliente?.nombre || '', p.vendedor || d.vendedor || '', p.medio, p.cuenta || '', p.operacion || '', p.moneda || d.moneda || 'PEN', p.monto, r2(toPEN(p.monto, d.moneda)), p.voucherKey || p.voucher || p.voucherDemo ? 'Sí' : 'No', p.nota || ''])).sort((a, b) => a[0].localeCompare(b[0]));
+  return [
+    { name: 'Cuentas por cobrar', cols: [{ h: 'Factura', w: 15 }, { h: 'Emisión', t: 'd', w: 11 }, { h: 'RUC/DNI', w: 13 }, { h: 'Cliente', w: 38 }, { h: 'Vendedor', w: 16 }, { h: 'Moneda', w: 8 }, { h: 'A cobrar', t: 'm', w: 13 }, { h: 'Cobrado', t: 'm', w: 13 }, { h: 'Saldo', t: 'm', w: 13 }, { h: 'Saldo en S/', t: 'm', w: 13 }, { h: 'Próx. vencimiento', t: 'd', w: 15 }, { h: 'Días de atraso', t: 'n', w: 13 }, { h: 'Estado', w: 14 }], rows: cxc.sort((a, b) => b[11] - a[11]) },
+    { name: 'Pagos aplicados', cols: [{ h: 'Fecha de pago', t: 'd', w: 13 }, { h: 'Factura', w: 15 }, { h: 'RUC/DNI', w: 13 }, { h: 'Cliente', w: 38 }, { h: 'Vendedor', w: 16 }, { h: 'Medio', w: 18 }, { h: 'Cuenta', w: 38 }, { h: 'N.° operación', w: 14 }, { h: 'Moneda', w: 8 }, { h: 'Monto', t: 'm', w: 13 }, { h: 'Monto en S/', t: 'm', w: 13 }, { h: 'Voucher', w: 9 }, { h: 'Nota', w: 28 }], rows: pagos },
+  ];
+}
+function hojasReporte(desde, hasta) {
+  const all = allDocs(), en = d => d.fecha >= desde && d.fecha <= hasta && d.numero;
+  const tc = d => (d.moneda === 'USD' ? Number(d.tipoCambio) || Number(DB.cfg.tipoCambio) || 1 : 1);
+  const sg = d => (d.tipo === '07' ? -1 : 1);
+  const cpe = all.filter(d => ES_CPE(d.tipo) && en(d) && d.estado !== 'borrador').sort((a, b) => (a.fecha + a.serie + pad(a.numero, 8)).localeCompare(b.fecha + b.serie + pad(b.numero, 8)));
+  const vale = d => ['aceptado', 'observado'].includes(d.estado);
+  const ventas = cpe.map(d => { const t = d.totales || calc(d), s = sg(d), k = tc(d); return [d.fecha, d.tipo, d.serie, d.numero, d.cliente?.tipoDoc || '', d.cliente?.numDoc || '', d.cliente?.nombre || '', d.moneda || 'PEN', k, r2(s * t.gravada * k), r2(s * (t.exonerada || 0) * k), r2(s * (t.inafecta || 0) * k), r2(s * t.igv * k), r2(s * t.total * k), d.ref ? `${d.ref.serie}-${d.ref.numero}` : '', ESTADO_TXT[d.estado] || d.estado, d.formaPago === 'Credito' ? 'Crédito' : 'Contado', d.totales?.detraccion || '', d.vendedor || '']; });
+  const porCli = new Map(), porVen = new Map(), porProd = new Map(), porMes = new Map();
+  cpe.filter(vale).forEach(d => {
+    const v = r2(sg(d) * toPEN(totalOf(d), d.moneda)), kc = d.cliente?.numDoc || d.cliente?.nombre || 'Clientes varios';
+    const c = porCli.get(kc) || [d.cliente?.numDoc || '', d.cliente?.nombre || 'Clientes varios', 0, 0]; if (!ES_NOTA(d.tipo)) c[2]++; c[3] = r2(c[3] + v); porCli.set(kc, c);
+    const vn = d.vendedor || (d.ref && getDoc(d.ref.id)?.vendedor) || 'Sin responsable', r = porVen.get(vn) || [vn, 0, 0, 0, 0]; if (!ES_NOTA(d.tipo)) r[1]++; r[2] = r2(r[2] + v); porVen.set(vn, r);
+    const m = d.fecha.slice(0, 7), mm = porMes.get(m) || [m, 0, 0, 0, 0]; if (d.tipo === '01') mm[1] = r2(mm[1] + v); if (d.tipo === '03') mm[2] = r2(mm[2] + v); if (ES_NOTA(d.tipo)) mm[3] = r2(mm[3] + v); mm[4] = r2(mm[4] + v); porMes.set(m, mm);
+    if (!ES_NOTA(d.tipo)) (d.items || []).forEach(it => { const k = it.codigo || it.desc, p = porProd.get(k) || [it.codigo || '', it.desc, it.unidad || '', 0, 0]; p[3] = r2(p[3] + Number(it.cant || 0)); p[4] = r2(p[4] + toPEN(Number(it.cant || 0) * Number(it.precio || 0) * (d.incluyeIGV ? 1 / 1.18 : 1), d.moneda)); porProd.set(k, p); });
+  });
+  const cots = all.filter(d => d.tipo === 'COT' && en(d)).map(d => [d.fecha, docNum(d), d.cliente?.numDoc || '', d.cliente?.nombre || '', d.vendedor || '', d.moneda || 'PEN', totalOf(d), r2(toPEN(totalOf(d), d.moneda)), ESTADO_TXT[cotEstado(d)] || cotEstado(d), d.vence || '', d.facturaId && getDoc(d.facturaId) ? docNum(getDoc(d.facturaId)) : '']);
+  cots.forEach(r => { const v = porVen.get(r[4] || 'Sin responsable'); if (v) { v[3]++; if (r[8] === 'Facturada') v[4]++; } });
+  const vend = [...porVen.values()].map(r => [r[0], r[1], r[2], r[3], r[3] ? r2((r[4] / r[3]) * 100) : 0]);
+  const guias = all.filter(d => d.tipo === '09' && en(d)).map(d => [d.fecha, docNum(d), d.cliente?.nombre || '', MOTIVOS_TRASLADO[d.traslado?.motivo] || '', Number(d.traslado?.pesoKg) || 0, d.traslado?.llegada?.direccion || '', d.facturaId && getDoc(d.facturaId) ? docNum(getDoc(d.facturaId)) : '', ESTADO_TXT[d.estado] || d.estado]);
+  return [
+    { name: 'Registro de ventas', cols: [{ h: 'Fecha', t: 'd', w: 11 }, { h: 'Tipo', w: 6 }, { h: 'Serie', w: 7 }, { h: 'Número', t: 'n', w: 9 }, { h: 'Tipo doc.', w: 9 }, { h: 'N.° doc.', w: 13 }, { h: 'Cliente', w: 38 }, { h: 'Moneda', w: 8 }, { h: 'T.C.', t: 'm', w: 7 }, { h: 'Op. gravada S/', t: 'm', w: 14 }, { h: 'Exonerada S/', t: 'm', w: 13 }, { h: 'Inafecta S/', t: 'm', w: 12 }, { h: 'IGV S/', t: 'm', w: 12 }, { h: 'Total S/', t: 'm', w: 13 }, { h: 'Doc. modificado', w: 14 }, { h: 'Estado SUNAT', w: 16 }, { h: 'Forma de pago', w: 13 }, { h: 'Detracción S/', t: 'm', w: 13 }, { h: 'Vendedor', w: 16 }], rows: ventas },
+    { name: 'Ventas por mes', cols: [{ h: 'Mes', w: 10 }, { h: 'Facturas S/', t: 'm', w: 14 }, { h: 'Boletas S/', t: 'm', w: 14 }, { h: 'Notas S/', t: 'm', w: 13 }, { h: 'Neto S/', t: 'm', w: 14 }], rows: [...porMes.values()].sort((a, b) => a[0].localeCompare(b[0])) },
+    { name: 'Ventas por cliente', cols: [{ h: 'RUC/DNI', w: 13 }, { h: 'Cliente', w: 40 }, { h: 'Comprobantes', t: 'n', w: 13 }, { h: 'Ventas netas S/', t: 'm', w: 15 }], rows: [...porCli.values()].sort((a, b) => b[3] - a[3]) },
+    { name: 'Ventas por vendedor', cols: [{ h: 'Vendedor', w: 18 }, { h: 'Comprobantes', t: 'n', w: 13 }, { h: 'Ventas netas S/', t: 'm', w: 15 }, { h: 'Cotizaciones', t: 'n', w: 12 }, { h: 'Conversión %', t: 'm', w: 12 }], rows: vend.sort((a, b) => b[2] - a[2]) },
+    { name: 'Ventas por producto', cols: [{ h: 'Código', w: 9 }, { h: 'Descripción', w: 46 }, { h: 'Unidad', w: 8 }, { h: 'Cantidad', t: 'm', w: 11 }, { h: 'Valor de venta S/', t: 'm', w: 16 }], rows: [...porProd.values()].sort((a, b) => b[4] - a[4]) },
+    { name: 'Cotizaciones', cols: [{ h: 'Fecha', t: 'd', w: 11 }, { h: 'Número', w: 13 }, { h: 'RUC/DNI', w: 13 }, { h: 'Cliente', w: 38 }, { h: 'Vendedor', w: 16 }, { h: 'Moneda', w: 8 }, { h: 'Total', t: 'm', w: 13 }, { h: 'Total S/', t: 'm', w: 13 }, { h: 'Estado', w: 12 }, { h: 'Vence', t: 'd', w: 11 }, { h: 'Factura', w: 14 }], rows: cots },
+    ...hojasCobranza(desde, hasta),
+    { name: 'Guías de remisión', cols: [{ h: 'Fecha', t: 'd', w: 11 }, { h: 'Número', w: 13 }, { h: 'Destinatario', w: 38 }, { h: 'Motivo', w: 14 }, { h: 'Peso kg', t: 'm', w: 10 }, { h: 'Llegada', w: 40 }, { h: 'Factura', w: 14 }, { h: 'Estado', w: 12 }], rows: guias },
+  ];
+}
+async function descargarExcel(btn, cual) {
+  btn?.classList.add('loading');
+  try {
+    const k = UI.xlsP || 'mes', [desde, hasta, etq] = cual === 'cobranzas' ? ['', '', todayISO()] : rangoPeriodo(k);
+    const hojas = cual === 'cobranzas' ? hojasCobranza('', '') : hojasReporte(desde, hasta);
+    const blob = await xlsxBlob(hojas);
+    await saveFile(`${cual === 'cobranzas' ? 'cobranzas' : 'reporte-ventas'}-${DB.cfg.empresa.ruc || 'empresa'}-${etq}.xlsx`, blob);
+    logEvent('archivo.descarga', null, `Excel de ${cual === 'cobranzas' ? 'cobranzas' : `ventas (${PERIODOS_XLS.find(p => p[0] === k)?.[1] || k})`}`);
+  } catch (e) { console.warn(e); toast(navigator.onLine === false ? 'Para armar el Excel se necesita internet la primera vez.' : 'No se pudo generar el Excel. Inténtalo de nuevo.', 'bad'); }
+  btn?.classList.remove('loading');
+}
+function excelPanelHTML() {
+  const k = UI.xlsP || 'mes';
+  return `<section class="panel xls-panel"><div class="panel-h"><h2>Reportes en Excel</h2><span class="hint">Un libro con varias hojas, listo para filtrar</span></div><div class="panel-b">
+    <p class="muted" style="margin-top:0">Registro de ventas, ventas por mes, por cliente, por vendedor y por producto, cotizaciones, cuentas por cobrar, pagos aplicados y guías.</p>
+    <div class="row-gap" style="flex-wrap:wrap"><div class="seg" role="group" aria-label="Periodo">${PERIODOS_XLS.map(([v, l]) => `<button data-act="xls-p" data-v="${v}" aria-pressed="${k === v}">${l}</button>`).join('')}</div>
+    <button class="btn primary" data-act="xls-rep">${icon('download')}Descargar Excel</button></div></div></section>`;
+}
+Object.assign(ACT, {
+  cobf: el => { UI.cobF = el.dataset.f; render(); },
+  'cob-aplicar': (el, ev) => { ev?.stopPropagation(); cobranzaModal(el.dataset.id); },
+  'cob-guardar': el => guardarCobranza(el),
+  'cob-voucher': (el, ev) => { ev?.stopPropagation(); verVoucher(el.dataset.id, el.dataset.p); },
+  'cob-excel': el => descargarExcel(el, 'cobranzas'),
+  'xls-p': el => { UI.xlsP = el.dataset.v; render(); },
+  'xls-rep': el => descargarExcel(el, 'reporte'),
+  cobrado: el => cobranzaModal(el.dataset.id),
 });
 
 /* ---------- actualizar datos demo antiguos (bases creadas antes de guías, notas y SPOT) ---------- */
@@ -4738,7 +5177,7 @@ async function subirDatosLocales(btn) {
 function bannerPruebaHTML() {
   if (typeof GRANATE_PRUEBA === 'undefined' || !GRANATE_PRUEBA || !/FacturacionelectronicaLanAI\.html$/.test(location.pathname)) return '';
   const url = location.pathname.replace(/FacturacionelectronicaLanAI\.html$/, 'granate.html');
-  return `<div class="banner"><div class="b-ic">${icon('lock')}</div><div class="b-t"><b>Versión de prueba: no pide usuario</b><span>Lo que hagas aquí queda solo en este navegador. Para entrar con tu usuario y ver los datos reales de la empresa desde cualquier equipo, usa la versión principal.</span></div><a class="btn primary" href="${esc(url)}">Ir a la versión con usuario</a></div>`;
+  return `<div class="banner"><div class="b-ic">${icon('lock')}</div><div class="b-t"><b>Versión de prueba con datos de ejemplo</b><span>LanAI Demo S.A.C. es una empresa ficticia con 12 meses de ventas, cobranzas y reportes para que pruebes todo. Lo que hagas queda solo en este navegador y no tiene validez ante SUNAT. Para tus datos reales, usa la versión con usuario.</span></div><a class="btn primary" href="${esc(url)}">Ir a la versión con usuario</a></div>`;
 }
 
 /* ---------- pantalla de ingreso ---------- */
@@ -5171,6 +5610,7 @@ document.addEventListener('change', async ev => {
     var t = (typeof TIPOS !== 'undefined' && TIPOS[d.tipo] && TIPOS[d.tipo].corto) || d.tipo;
     return { comprobante: t + ' ' + (typeof docNum === 'function' ? docNum(d) : d.serie + '-' + d.numero), fecha: d.fecha, cliente: (d.cliente && d.cliente.nombre) || '', docCliente: (d.cliente && d.cliente.numDoc) || '',
       estado: d.estado, moneda: d.moneda || 'PEN', total: totalDe(d), vendedor: d.vendedor || undefined,
+      credito: (typeof esCredito === 'function' && esCredito(d)) ? { saldo: saldoDe(d), cobrado: pagadoDe(d), estado: estadoCobro(d), proximoVencimiento: (proxCuota(d) || {}).fecha } : undefined,
       items: (d.items || []).slice(0, 4).map(function (i) { return String(i.desc || '').slice(0, 60) + ' x' + i.cant; }) };
   }
   /* Resumen de datos que viaja con la pregunta: totales por mes, mejores clientes, lo reciente y el detalle de los clientes que la pregunta menciona. */
