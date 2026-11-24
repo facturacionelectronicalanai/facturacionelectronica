@@ -2997,7 +2997,7 @@ function fitPapers() { $$('.paper-frame').forEach(f => { const s = f.querySelect
 function observePapers() { if (!paperRO && 'ResizeObserver' in window) paperRO = new ResizeObserver(() => requestAnimationFrame(fitPapers)); $$('.paper-frame').forEach(f => paperRO && paperRO.observe(f)); fitPapers(); }
 
 /* ================= DETALLE (drawer) ================= */
-function openDrawer(id) { D = { id, sending: false, steps: null }; renderDrawer(); const dl = $('#drawer'); if (!dl.open) dl.showModal(); requestAnimationFrame(() => { fitPapers(); }); }
+function openDrawer(id) { D = { id, sending: false, steps: null }; try { loadLib('jspdf').catch(() => {}); loadLib('qr').catch(() => {}); } catch { /* */ } renderDrawer(); const dl = $('#drawer'); if (!dl.open) dl.showModal(); requestAnimationFrame(() => { fitPapers(); }); }
 function closeDrawer() { const dl = $('#drawer'); if (dl.open) dl.close(); }
 function stepsFromDoc(d) {
   if (D && D.steps) return D.steps;
@@ -3020,7 +3020,7 @@ function renderDrawer() {
   const A = [];
   if (isCot) {
     if (!['facturada', 'rechazada'].includes(d.estado)) A.push(`<button class="btn primary" data-act="convert" data-id="${d.id}" data-tipo="${d.cliente?.tipoDoc === '6' ? '01' : '03'}">${icon('receipt')}${d.cliente?.tipoDoc === '6' ? 'Facturar ahora' : 'Emitir boleta'}</button>`);
-    A.push(`<a class="btn" href="${esc(wa)}" target="_blank" rel="noopener" data-act="wa" data-id="${d.id}">${icon('chat')}WhatsApp</a>`);
+    A.push(`<button class="btn" data-act="wa-pdf" data-id="${d.id}">${icon('chat')}WhatsApp</button>`);
     A.push(`<button class="btn" data-act="pdf" data-id="${d.id}">${icon('pdf')}PDF</button>`);
     if (d.estado !== 'facturada') A.push(`<button class="btn" data-act="edit" data-id="${d.id}">${icon('edit')}Editar</button>`);
     A.push(`<button class="btn ghost" data-act="copy-text" data-id="${d.id}">${icon('copy')}Copiar texto</button>`, `<button class="btn ghost" data-act="dup" data-id="${d.id}">${icon('dup')}Duplicar</button>`);
@@ -3028,7 +3028,7 @@ function renderDrawer() {
   } else if (d.tipo === 'NV') {
     if (d.estado === 'emitida') A.push(`<button class="btn primary" data-act="convert" data-id="${d.id}" data-tipo="${d.cliente?.tipoDoc === '6' ? '01' : '03'}">${icon('receipt')}Convertir en ${d.cliente?.tipoDoc === '6' ? 'factura' : 'boleta'}</button>`);
     if (d.estado === 'borrador') A.push(`<button class="btn primary" data-act="edit" data-id="${d.id}">${icon('edit')}Continuar</button>`);
-    if (d.estado !== 'borrador') A.push(`<button class="btn" data-act="pdf" data-id="${d.id}">${icon('pdf')}PDF</button>`, `<a class="btn" href="${esc(wa)}" target="_blank" rel="noopener">${icon('chat')}WhatsApp</a>`);
+    if (d.estado !== 'borrador') A.push(`<button class="btn" data-act="pdf" data-id="${d.id}">${icon('pdf')}PDF</button>`, `<button class="btn" data-act="wa-pdf" data-id="${d.id}">${icon('chat')}WhatsApp</button>`);
     if (d.estado === 'emitida') A.push(`<button class="btn" data-act="edit" data-id="${d.id}">${icon('edit')}Editar</button>`, `<button class="btn ghost danger" data-act="nv-anular" data-id="${d.id}" style="margin-left:auto">${icon('ban')}Anular</button>`);
     if (d.estado === 'borrador') A.push(`<button class="btn ghost danger" data-act="del-doc" data-id="${d.id}" style="margin-left:auto">${icon('trash')}Eliminar borrador</button>`);
   } else {
@@ -3037,7 +3037,7 @@ function renderDrawer() {
     if (d.estado === 'rechazado') A.push(`<button class="btn primary" data-act="fix" data-id="${d.id}">${icon('refresh')}Corregir en uno nuevo</button>`);
     if (guiaPendiente(d)) A.unshift(`<button class="btn ${d.estado === 'pendiente' ? 'dark' : 'primary'}" data-act="gre-de-fac" data-id="${d.id}">${icon('truck')}Emitir guía de remisión</button>`);
     if (['aceptado', 'observado', 'pendiente'].includes(d.estado)) A.push(`<button class="btn" data-act="pdf" data-id="${d.id}">${icon('pdf')}PDF</button>`, `<button class="btn" data-act="sf-todo" data-id="${d.id}">${icon('download')}PDF + XML + CDR</button>`);
-    if (['aceptado', 'observado'].includes(d.estado)) A.push(`<a class="btn" href="${esc(wa)}" target="_blank" rel="noopener">${icon('chat')}WhatsApp</a>`);
+    if (['aceptado', 'observado'].includes(d.estado)) A.push(`<button class="btn" data-act="wa-pdf" data-id="${d.id}">${icon('chat')}WhatsApp</button>`);
     if (esCredito(d) && estadoCobro(d) !== 'cobrada') A.push(`<button class="btn dark" data-act="cobrado" data-id="${d.id}">${icon('coins')}Aplicar cobranza</button>`);
     if (['01', '03'].includes(d.tipo) && d.estado === 'aceptado') A.push(`<button class="btn ghost" data-act="nc" data-id="${d.id}">${icon('undo')}Nota de crédito</button>`, `<button class="btn ghost" data-act="nd" data-id="${d.id}">${icon('plusdoc')}Nota de débito</button>`);
     if (ES_CPE(d.tipo) && ['aceptado', 'observado'].includes(d.estado)) A.push(`<button class="btn ghost danger" data-act="baja" data-id="${d.id}">${icon('ban')}Anular en SUNAT</button>`);
@@ -4944,14 +4944,38 @@ async function ticketPDF(d, ancho = TK_ANCHO(), cfg = DB.cfg) {
   return p.output('blob');
 }
 async function descargarTicketPDF(d, ancho = TK_ANCHO()) { const b = await ticketPDF(d, ancho); await saveFile(`Ticket-${ancho}mm-${d.serie}-${d.numero || 'borrador'}.pdf`, b); }
-/* PDF por WhatsApp: en el celular comparte el archivo directo; en la computadora lo descarga y abre el chat del cliente */
+/* PDF por WhatsApp: en el celular abre el menú de compartir del sistema con el PDF adjunto (se elige WhatsApp y el
+   archivo va al chat); en la computadora lo descarga y abre el chat del cliente con el mensaje. Si armar el PDF tarda
+   y el celular ya no permite abrir el menú (se pierde el «toque»), se ofrece un botón para compartirlo al instante. */
+let PDF_LISTO = null;
 async function compartirPDF(d) {
-  const b = await makePDF(d), nombre = `${TIPOS[d.tipo]?.corto?.replace(/\s+/g, '-') || 'Documento'}-${d.serie}-${d.numero}.pdf`;
-  const file = new File([b], nombre, { type: 'application/pdf' });
-  if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: nombre, text: shareText(d) }); logEvent('archivo.descarga', d, 'PDF compartido por WhatsApp / otra app'); return; } catch (e) { if (e.name === 'AbortError') return; } }
-  await saveFile(nombre, b); window.open(waLink(d, `${shareText(d)}\n(Te adjunto el PDF)`), '_blank', 'noopener');
+  const b = await makePDF(d), nombre = `${TIPOS[d.tipo]?.corto?.replace(/\s+/g, '-') || 'Documento'}-${docNum(d)}.pdf`;
+  const file = new File([b], nombre, { type: 'application/pdf' }), texto = shareText(d);
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], text: texto }); logEvent('archivo.descarga', d, 'PDF compartido por WhatsApp / otra app'); return; }
+    catch (e) {
+      if (e.name === 'AbortError') return;
+      if (e.name === 'NotAllowedError') { PDF_LISTO = { file, texto, d }; openModal(`<div class="modal-h"><h2>PDF listo</h2><button class="btn ghost icon-only" data-act="modal-close" aria-label="Cerrar">${icon('x')}</button></div><div class="modal-b"><p style="margin-top:0">${esc(nombre)} está listo. Toca <b>Enviar</b> y elige <b>WhatsApp</b> en el menú del celular: el PDF va adjunto con el mensaje.</p></div><div class="modal-f"><button class="btn" data-act="modal-close">Cancelar</button><button class="btn primary" data-act="pdf-listo">${icon('chat')}Enviar</button></div>`); return; }
+    }
+  }
+  await saveFile(nombre, b); window.open(waLink(d, `${texto}\n(Te adjunto el PDF)`), '_blank', 'noopener');
   toast('PDF descargado: adjúntalo en el chat de WhatsApp que se abrió.', 'ok');
 }
+Object.assign(ACT, {
+  'wa-pdf': async el => {
+    const d = getDoc(el.dataset.id); if (!d) return;
+    el.classList.add('loading');
+    try {
+      if (d.tipo === 'COT' && d.estado === 'borrador') { const x = clone(d); x.estado = 'enviada'; await put('documentos', x); }
+      await compartirPDF(getDoc(d.id));
+    } catch (e) { console.warn(e); toast(navigator.onLine === false ? 'Sin conexión: para armar el PDF se necesita internet la primera vez.' : 'No se pudo preparar el PDF.', 'bad'); }
+    el.classList.remove('loading');
+  },
+  'pdf-listo': async () => {
+    const x = PDF_LISTO; if (!x) return; closeModal(); PDF_LISTO = null;
+    try { await navigator.share({ files: [x.file], text: x.texto }); logEvent('archivo.descarga', x.d, 'PDF compartido por WhatsApp / otra app'); } catch (e) { if (e.name !== 'AbortError') toast('No se pudo abrir el menú de compartir.', 'bad'); }
+  },
+});
 function entregaHTML(d) {
   if (!(ES_CPE(d.tipo) || d.tipo === 'NV') || d.estado === 'borrador') return '';
   const w = TK_ANCHO(), sug = d.tipo === '01' ? 'a4' : 'tk';
