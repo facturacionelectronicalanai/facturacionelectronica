@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es-PE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0A2836">
+<title>Instalar AI Toque · Android y iPhone</title>
+<link rel="manifest" href="app.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icono-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="AI Toque">
+<style>
+:root{--g:#0F3B4C;--gp:#0A2836;--led:#5EEAD4;--t:#16232A;--t2:#4A5F68;--line:#DCE6E9;--bg:#F3F7F8}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--t);line-height:1.5}
+.top{background:var(--gp);color:#fff;padding:28px 20px 72px;text-align:center}
+.top img{width:96px;height:96px;border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.top h1{margin:14px 0 4px;font-size:1.7rem;letter-spacing:-.02em}.top p{margin:0;opacity:.8}
+.wrap{max-width:560px;margin:-48px auto 40px;padding:0 16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 6px 24px rgba(10,40,54,.08);margin-bottom:16px}
+.tabs{display:flex;gap:6px;background:#E6EEF0;padding:4px;border-radius:12px;margin-bottom:16px}
+.tabs button{flex:1;border:0;background:none;padding:10px 6px;border-radius:9px;font-family:inherit;font-weight:600;font-size:.95rem;color:var(--t2);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:#fff;color:var(--g);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+ol{margin:0;padding-left:0;list-style:none;counter-reset:p;display:flex;flex-direction:column;gap:12px}
+ol li{counter-increment:p;display:flex;gap:12px;align-items:flex-start}
+ol li::before{content:counter(p);flex:none;width:28px;height:28px;border-radius:50%;background:var(--g);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.9rem;margin-top:1px}
+b{color:var(--g)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px 18px;border-radius:14px;border:0;background:var(--g);color:#fff;font-family:inherit;font-weight:700;font-size:1.05rem;text-decoration:none;cursor:pointer;margin-top:16px}
+.btn.sec{background:#fff;color:var(--g);border:1.5px solid var(--line)}
+.btn[hidden]{display:none}
+.nota{font-size:.88rem;color:var(--t2);margin:12px 0 0}
+.qr{display:flex;gap:16px;align-items:center}.qr svg{width:150px;height:150px;flex:none;border-radius:10px;border:1px solid var(--line)}
+.ok{display:none;background:#E8F7EF;color:#156B3F;border-radius:12px;padding:12px 14px;font-weight:600;margin-top:14px}
+@media (max-width:420px){.qr{flex-direction:column;text-align:center}}
+</style>
+</head>
+<body>
+<header class="top"><img src="icono-512.png" alt=""><h1>Instala AI Toque</h1><p>Cotiza, factura, cobra y consulta a LanAI desde tu celular</p></header>
+<main class="wrap">
+  <section class="card">
+    <div class="tabs" role="group" aria-label="Tu equipo">
+      <button data-so="android" aria-pressed="false">Android</button><button data-so="ios" aria-pressed="false">iPhone</button><button data-so="pc" aria-pressed="false">Computadora</button>
+    </div>
+    <div data-pasos="android" hidden>
+      <ol>
+        <li><span>Abre esta página en <b>Chrome</b>.</span></li>
+        <li><span>Toca <b>Instalar ahora</b> (abajo). Si no aparece, toca el menú <b>⋮</b> de Chrome (arriba a la derecha) y elige <b>Instalar app</b> o <b>Agregar a la pantalla principal</b>.</span></li>
+        <li><span>Confirma con <b>Instalar</b>. AI Toque queda en tu lista de apps, con su ícono.</span></li>
+      </ol>
+    </div>
+    <div data-pasos="ios" hidden>
+      <ol>
+        <li><span>Abre esta página en <b>Safari</b> (en iOS 16.4 o posterior también sirve Chrome).</span></li>
+        <li><span>Toca el botón <b>Compartir</b>: el cuadrado con la flecha hacia arriba.</span></li>
+        <li><span>Baja y elige <b>Agregar a pantalla de inicio</b>, luego <b>Agregar</b>.</span></li>
+        <li><span>Abre <b>AI Toque</b> desde el ícono de tu pantalla de inicio.</span></li>
+      </ol>
+    </div>
+    <div data-pasos="pc" hidden>
+      <ol>
+        <li><span>Abre esta página en <b>Chrome</b> o <b>Edge</b>.</span></li>
+        <li><span>Haz clic en <b>Instalar ahora</b> o en el ícono de instalar al final de la barra de direcciones.</span></li>
+        <li><span>Para el celular, escanea el código QR de abajo con la cámara.</span></li>
+      </ol>
+    </div>
+    <button class="btn" id="instalar" hidden>Instalar ahora</button>
+    <a class="btn sec" id="abrir" href="FacturacionelectronicaLanAI.html">Abrir AI Toque</a>
+    <div class="ok" id="ok">Listo: AI Toque ya está instalada. Ábrela desde su ícono.</div>
+    <p class="nota">No necesitas Play Store ni App Store. La app se actualiza sola cada vez que la abres con internet.</p>
+  </section>
+  <section class="card qr">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 45 45" shape-rendering="crispEdges" role="img" aria-label="Código QR para abrir AI Toque"><rect x="-2" y="-2" width="45" height="45" fill="#fff"/><path fill="#0F3B4C" d="M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM8 0h1v1h-1zM9 0h1v1h-1zM10 0h1v1h-1zM16 0h1v1h-1zM17 0h1v1h-1zM18 0h1v1h-1zM22 0h1v1h-1zM24 0h1v1h-1zM25 0h1v1h-1zM26 0h1v1h-1zM34 0h1v1h-1zM35 0h1v1h-1zM36 0h1v1h-1zM37 0h1v1h-1zM38 0h1v1h-1zM39 0h1v1h-1zM40 0h1v1h-1zM0 1h1v1h-1zM6 1h1v1h-1zM9 1h1v1h-1zM10 1h1v1h-1zM13 1h1v1h-1zM14 1h1v1h-1zM15 1h1v1h-1zM16 1h1v1h-1zM21 1h1v1h-1zM22 1h1v1h-1zM28 1h1v1h-1zM29 1h1v1h-1zM30 1h1v1h-1zM34 1h1v1h-1zM40 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM6 2h1v1h-1zM8 2h1v1h-1zM9 2h1v1h-1zM12 2h1v1h-1zM14 2h1v1h-1zM15 2h1v1h-1zM17 2h1v1h-1zM19 2h1v1h-1zM22 2h1v1h-1zM24 2h1v1h-1zM25 2h1v1h-1zM28 2h1v1h-1zM30 2h1v1h-1zM31 2h1v1h-1zM34 2h1v1h-1zM36 2h1v1h-1zM37 2h1v1h-1zM38 2h1v1h-1zM40 2h1v1h-1zM0 3h1v1h-1zM2 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM9 3h1v1h-1zM10 3h1v1h-1zM12 3h1v1h-1zM16 3h1v1h-1zM20 3h1v1h-1zM22 3h1v1h-1zM28 3h1v1h-1zM30 3h1v1h-1zM34 3h1v1h-1zM36 3h1v1h-1zM37 3h1v1h-1zM38 3h1v1h-1zM40 3h1v1h-1zM0 4h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM10 4h1v1h-1zM11 4h1v1h-1zM14 4h1v1h-1zM16 4h1v1h-1zM17 4h1v1h-1zM22 4h1v1h-1zM24 4h1v1h-1zM25 4h1v1h-1zM29 4h1v1h-1zM30 4h1v1h-1zM32 4h1v1h-1zM34 4h1v1h-1zM36 4h1v1h-1zM37 4h1v1h-1zM38 4h1v1h-1zM40 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM10 5h1v1h-1zM12 5h1v1h-1zM13 5h1v1h-1zM15 5h1v1h-1zM16 5h1v1h-1zM18 5h1v1h-1zM21 5h1v1h-1zM22 5h1v1h-1zM24 5h1v1h-1zM25 5h1v1h-1zM29 5h1v1h-1zM30 5h1v1h-1zM32 5h1v1h-1zM34 5h1v1h-1zM40 5h1v1h-1zM0 6h1v1h-1zM1 6h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h1v1h-1zM28 6h1v1h-1zM30 6h1v1h-1zM32 6h1v1h-1zM34 6h1v1h-1zM35 6h1v1h-1zM36 6h1v1h-1zM37 6h1v1h-1zM38 6h1v1h-1zM39 6h1v1h-1zM40 6h1v1h-1zM13 7h1v1h-1zM14 7h1v1h-1zM20 7h1v1h-1zM23 7h1v1h-1zM24 7h1v1h-1zM0 8h1v1h-1zM2 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM15 8h1v1h-1zM19 8h1v1h-1zM24 8h1v1h-1zM32 8h1v1h-1zM35 8h1v1h-1zM38 8h1v1h-1zM40 8h1v1h-1zM0 9h1v1h-1zM2 9h1v1h-1zM5 9h1v1h-1zM7 9h1v1h-1zM10 9h1v1h-1zM11 9h1v1h-1zM13 9h1v1h-1zM14 9h1v1h-1zM16 9h1v1h-1zM18 9h1v1h-1zM19 9h1v1h-1zM20 9h1v1h-1zM21 9h1v1h-1zM23 9h1v1h-1zM24 9h1v1h-1zM27 9h1v1h-1zM28 9h1v1h-1zM29 9h1v1h-1zM31 9h1v1h-1zM32 9h1v1h-1zM34 9h1v1h-1zM35 9h1v1h-1zM38 9h1v1h-1zM40 9h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM8 10h1v1h-1zM10 10h1v1h-1zM11 10h1v1h-1zM12 10h1v1h-1zM14 10h1v1h-1zM16 10h1v1h-1zM17 10h1v1h-1zM19 10h1v1h-1zM23 10h1v1h-1zM25 10h1v1h-1zM27 10h1v1h-1zM31 10h1v1h-1zM36 10h1v1h-1zM37 10h1v1h-1zM38 10h1v1h-1zM39 10h1v1h-1zM40 10h1v1h-1zM4 11h1v1h-1zM7 11h1v1h-1zM8 11h1v1h-1zM9 11h1v1h-1zM10 11h1v1h-1zM14 11h1v1h-1zM16 11h1v1h-1zM18 11h1v1h-1zM19 11h1v1h-1zM22 11h1v1h-1zM23 11h1v1h-1zM24 11h1v1h-1zM26 11h1v1h-1zM28 11h1v1h-1zM31 11h1v1h-1zM32 11h1v1h-1zM33 11h1v1h-1zM35 11h1v1h-1zM37 11h1v1h-1zM40 11h1v1h-1zM2 12h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM9 12h1v1h-1zM13 12h1v1h-1zM16 12h1v1h-1zM19 12h1v1h-1zM20 12h1v1h-1zM27 12h1v1h-1zM28 12h1v1h-1zM34 12h1v1h-1zM35 12h1v1h-1zM39 12h1v1h-1zM40 12h1v1h-1zM0 13h1v1h-1zM2 13h1v1h-1zM7 13h1v1h-1zM13 13h1v1h-1zM16 13h1v1h-1zM18 13h1v1h-1zM20 13h1v1h-1zM21 13h1v1h-1zM28 13h1v1h-1zM34 13h1v1h-1zM35 13h1v1h-1zM38 13h1v1h-1zM40 13h1v1h-1zM2 14h1v1h-1zM6 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM11 14h1v1h-1zM12 14h1v1h-1zM15 14h1v1h-1zM16 14h1v1h-1zM17 14h1v1h-1zM18 14h1v1h-1zM20 14h1v1h-1zM23 14h1v1h-1zM25 14h1v1h-1zM26 14h1v1h-1zM28 14h1v1h-1zM30 14h1v1h-1zM31 14h1v1h-1zM33 14h1v1h-1zM34 14h1v1h-1zM35 14h1v1h-1zM36 14h1v1h-1zM38 14h1v1h-1zM40 14h1v1h-1zM1 15h1v1h-1zM4 15h1v1h-1zM10 15h1v1h-1zM11 15h1v1h-1zM13 15h1v1h-1zM14 15h1v1h-1zM18 15h1v1h-1zM19 15h1v1h-1zM20 15h1v1h-1zM22 15h1v1h-1zM26 15h1v1h-1zM27 15h1v1h-1zM28 15h1v1h-1zM33 15h1v1h-1zM34 15h1v1h-1zM35 15h1v1h-1zM36 15h1v1h-1zM37 15h1v1h-1zM39 15h1v1h-1zM40 15h1v1h-1zM0 16h1v1h-1zM1 16h1v1h-1zM4 16h1v1h-1zM5 16h1v1h-1zM6 16h1v1h-1zM8 16h1v1h-1zM15 16h1v1h-1zM23 16h1v1h-1zM24 16h1v1h-1zM26 16h1v1h-1zM28 16h1v1h-1zM31 16h1v1h-1zM33 16h1v1h-1zM34 16h1v1h-1zM37 16h1v1h-1zM39 16h1v1h-1zM40 16h1v1h-1zM0 17h1v1h-1zM1 17h1v1h-1zM7 17h1v1h-1zM8 17h1v1h-1zM9 17h1v1h-1zM10 17h1v1h-1zM11 17h1v1h-1zM12 17h1v1h-1zM14 17h1v1h-1zM17 17h1v1h-1zM19 17h1v1h-1zM20 17h1v1h-1zM23 17h1v1h-1zM24 17h1v1h-1zM25 17h1v1h-1zM27 17h1v1h-1zM28 17h1v1h-1zM31 17h1v1h-1zM32 17h1v1h-1zM33 17h1v1h-1zM34 17h1v1h-1zM35 17h1v1h-1zM38 17h1v1h-1zM40 17h1v1h-1zM0 18h1v1h-1zM2 18h1v1h-1zM3 18h1v1h-1zM4 18h1v1h-1zM6 18h1v1h-1zM9 18h1v1h-1zM13 18h1v1h-1zM19 18h1v1h-1zM21 18h1v1h-1zM22 18h1v1h-1zM23 18h1v1h-1zM27 18h1v1h-1zM29 18h1v1h-1zM30 18h1v1h-1zM31 18h1v1h-1zM33 18h1v1h-1zM34 18h1v1h-1zM35 18h1v1h-1zM36 18h1v1h-1zM38 18h1v1h-1zM40 18h1v1h-1zM0 19h1v1h-1zM3 19h1v1h-1zM4 19h1v1h-1zM7 19h1v1h-1zM8 19h1v1h-1zM9 19h1v1h-1zM10 19h1v1h-1zM11 19h1v1h-1zM13 19h1v1h-1zM16 19h1v1h-1zM17 19h1v1h-1zM19 19h1v1h-1zM22 19h1v1h-1zM24 19h1v1h-1zM25 19h1v1h-1zM30 19h1v1h-1zM31 19h1v1h-1zM33 19h1v1h-1zM37 19h1v1h-1zM40 19h1v1h-1zM0 20h1v1h-1zM1 20h1v1h-1zM2 20h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM7 20h1v1h-1zM11 20h1v1h-1zM12 20h1v1h-1zM13 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM19 20h1v1h-1zM21 20h1v1h-1zM22 20h1v1h-1zM23 20h1v1h-1zM24 20h1v1h-1zM25 20h1v1h-1zM28 20h1v1h-1zM29 20h1v1h-1zM30 20h1v1h-1zM31 20h1v1h-1zM32 20h1v1h-1zM34 20h1v1h-1zM35 20h1v1h-1zM37 20h1v1h-1zM1 21h1v1h-1zM8 21h1v1h-1zM10 21h1v1h-1zM11 21h1v1h-1zM12 21h1v1h-1zM15 21h1v1h-1zM19 21h1v1h-1zM20 21h1v1h-1zM22 21h1v1h-1zM23 21h1v1h-1zM24 21h1v1h-1zM27 21h1v1h-1zM28 21h1v1h-1zM30 21h1v1h-1zM31 21h1v1h-1zM32 21h1v1h-1zM34 21h1v1h-1zM35 21h1v1h-1zM37 21h1v1h-1zM38 21h1v1h-1zM40 21h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM6 22h1v1h-1zM9 22h1v1h-1zM12 22h1v1h-1zM16 22h1v1h-1zM18 22h1v1h-1zM19 22h1v1h-1zM21 22h1v1h-1zM23 22h1v1h-1zM25 22h1v1h-1zM26 22h1v1h-1zM27 22h1v1h-1zM28 22h1v1h-1zM29 22h1v1h-1zM30 22h1v1h-1zM31 22h1v1h-1zM35 22h1v1h-1zM36 22h1v1h-1zM37 22h1v1h-1zM40 22h1v1h-1zM2 23h1v1h-1zM4 23h1v1h-1zM5 23h1v1h-1zM7 23h1v1h-1zM9 23h1v1h-1zM11 23h1v1h-1zM12 23h1v1h-1zM13 23h1v1h-1zM14 23h1v1h-1zM15 23h1v1h-1zM16 23h1v1h-1zM19 23h1v1h-1zM22 23h1v1h-1zM26 23h1v1h-1zM28 23h1v1h-1zM30 23h1v1h-1zM35 23h1v1h-1zM37 23h1v1h-1zM40 23h1v1h-1zM1 24h1v1h-1zM4 24h1v1h-1zM6 24h1v1h-1zM7 24h1v1h-1zM8 24h1v1h-1zM12 24h1v1h-1zM16 24h1v1h-1zM19 24h1v1h-1zM20 24h1v1h-1zM24 24h1v1h-1zM27 24h1v1h-1zM31 24h1v1h-1zM32 24h1v1h-1zM34 24h1v1h-1zM35 24h1v1h-1zM37 24h1v1h-1zM40 24h1v1h-1zM2 25h1v1h-1zM3 25h1v1h-1zM8 25h1v1h-1zM11 25h1v1h-1zM13 25h1v1h-1zM15 25h1v1h-1zM19 25h1v1h-1zM20 25h1v1h-1zM23 25h1v1h-1zM24 25h1v1h-1zM27 25h1v1h-1zM28 25h1v1h-1zM31 25h1v1h-1zM34 25h1v1h-1zM35 25h1v1h-1zM37 25h1v1h-1zM39 25h1v1h-1zM40 25h1v1h-1zM6 26h1v1h-1zM9 26h1v1h-1zM11 26h1v1h-1zM12 26h1v1h-1zM13 26h1v1h-1zM14 26h1v1h-1zM16 26h1v1h-1zM18 26h1v1h-1zM19 26h1v1h-1zM23 26h1v1h-1zM26 26h1v1h-1zM27 26h1v1h-1zM28 26h1v1h-1zM31 26h1v1h-1zM35 26h1v1h-1zM37 26h1v1h-1zM38 26h1v1h-1zM40 26h1v1h-1zM3 27h1v1h-1zM5 27h1v1h-1zM7 27h1v1h-1zM20 27h1v1h-1zM28 27h1v1h-1zM30 27h1v1h-1zM31 27h1v1h-1zM32 27h1v1h-1zM35 27h1v1h-1zM36 27h1v1h-1zM37 27h1v1h-1zM39 27h1v1h-1zM2 28h1v1h-1zM6 28h1v1h-1zM8 28h1v1h-1zM11 28h1v1h-1zM13 28h1v1h-1zM14 28h1v1h-1zM19 28h1v1h-1zM24 28h1v1h-1zM26 28h1v1h-1zM27 28h1v1h-1zM32 28h1v1h-1zM33 28h1v1h-1zM34 28h1v1h-1zM35 28h1v1h-1zM39 28h1v1h-1zM40 28h1v1h-1zM1 29h1v1h-1zM2 29h1v1h-1zM3 29h1v1h-1zM4 29h1v1h-1zM5 29h1v1h-1zM7 29h1v1h-1zM10 29h1v1h-1zM11 29h1v1h-1zM12 29h1v1h-1zM17 29h1v1h-1zM21 29h1v1h-1zM24 29h1v1h-1zM25 29h1v1h-1zM29 29h1v1h-1zM32 29h1v1h-1zM35 29h1v1h-1zM40 29h1v1h-1zM0 30h1v1h-1zM1 30h1v1h-1zM3 30h1v1h-1zM4 30h1v1h-1zM5 30h1v1h-1zM6 30h1v1h-1zM11 30h1v1h-1zM13 30h1v1h-1zM17 30h1v1h-1zM19 30h1v1h-1zM21 30h1v1h-1zM22 30h1v1h-1zM24 30h1v1h-1zM27 30h1v1h-1zM32 30h1v1h-1zM33 30h1v1h-1zM36 30h1v1h-1zM40 30h1v1h-1zM2 31h1v1h-1zM3 31h1v1h-1zM7 31h1v1h-1zM9 31h1v1h-1zM10 31h1v1h-1zM13 31h1v1h-1zM14 31h1v1h-1zM15 31h1v1h-1zM16 31h1v1h-1zM22 31h1v1h-1zM23 31h1v1h-1zM24 31h1v1h-1zM26 31h1v1h-1zM30 31h1v1h-1zM31 31h1v1h-1zM32 31h1v1h-1zM34 31h1v1h-1zM37 31h1v1h-1zM39 31h1v1h-1zM0 32h1v1h-1zM1 32h1v1h-1zM4 32h1v1h-1zM6 32h1v1h-1zM7 32h1v1h-1zM9 32h1v1h-1zM12 32h1v1h-1zM15 32h1v1h-1zM16 32h1v1h-1zM19 32h1v1h-1zM24 32h1v1h-1zM27 32h1v1h-1zM28 32h1v1h-1zM32 32h1v1h-1zM33 32h1v1h-1zM34 32h1v1h-1zM35 32h1v1h-1zM36 32h1v1h-1zM37 32h1v1h-1zM39 32h1v1h-1zM40 32h1v1h-1zM8 33h1v1h-1zM11 33h1v1h-1zM12 33h1v1h-1zM16 33h1v1h-1zM19 33h1v1h-1zM20 33h1v1h-1zM21 33h1v1h-1zM23 33h1v1h-1zM24 33h1v1h-1zM26 33h1v1h-1zM27 33h1v1h-1zM28 33h1v1h-1zM29 33h1v1h-1zM32 33h1v1h-1zM36 33h1v1h-1zM37 33h1v1h-1zM38 33h1v1h-1zM40 33h1v1h-1zM0 34h1v1h-1zM1 34h1v1h-1zM2 34h1v1h-1zM3 34h1v1h-1zM4 34h1v1h-1zM5 34h1v1h-1zM6 34h1v1h-1zM8 34h1v1h-1zM10 34h1v1h-1zM11 34h1v1h-1zM12 34h1v1h-1zM13 34h1v1h-1zM14 34h1v1h-1zM17 34h1v1h-1zM18 34h1v1h-1zM19 34h1v1h-1zM20 34h1v1h-1zM23 34h1v1h-1zM25 34h1v1h-1zM26 34h1v1h-1zM27 34h1v1h-1zM28 34h1v1h-1zM32 34h1v1h-1zM34 34h1v1h-1zM36 34h1v1h-1zM40 34h1v1h-1zM0 35h1v1h-1zM6 35h1v1h-1zM9 35h1v1h-1zM10 35h1v1h-1zM11 35h1v1h-1zM12 35h1v1h-1zM13 35h1v1h-1zM14 35h1v1h-1zM15 35h1v1h-1zM16 35h1v1h-1zM18 35h1v1h-1zM19 35h1v1h-1zM20 35h1v1h-1zM21 35h1v1h-1zM23 35h1v1h-1zM24 35h1v1h-1zM26 35h1v1h-1zM27 35h1v1h-1zM28 35h1v1h-1zM29 35h1v1h-1zM31 35h1v1h-1zM32 35h1v1h-1zM36 35h1v1h-1zM37 35h1v1h-1zM39 35h1v1h-1zM40 35h1v1h-1zM0 36h1v1h-1zM2 36h1v1h-1zM3 36h1v1h-1zM4 36h1v1h-1zM6 36h1v1h-1zM12 36h1v1h-1zM13 36h1v1h-1zM14 36h1v1h-1zM15 36h1v1h-1zM16 36h1v1h-1zM17 36h1v1h-1zM18 36h1v1h-1zM20 36h1v1h-1zM21 36h1v1h-1zM23 36h1v1h-1zM24 36h1v1h-1zM25 36h1v1h-1zM26 36h1v1h-1zM29 36h1v1h-1zM31 36h1v1h-1zM32 36h1v1h-1zM33 36h1v1h-1zM34 36h1v1h-1zM35 36h1v1h-1zM36 36h1v1h-1zM37 36h1v1h-1zM0 37h1v1h-1zM2 37h1v1h-1zM3 37h1v1h-1zM4 37h1v1h-1zM6 37h1v1h-1zM9 37h1v1h-1zM10 37h1v1h-1zM11 37h1v1h-1zM16 37h1v1h-1zM18 37h1v1h-1zM19 37h1v1h-1zM20 37h1v1h-1zM21 37h1v1h-1zM23 37h1v1h-1zM24 37h1v1h-1zM26 37h1v1h-1zM27 37h1v1h-1zM28 37h1v1h-1zM31 37h1v1h-1zM35 37h1v1h-1zM36 37h1v1h-1zM38 37h1v1h-1zM39 37h1v1h-1zM0 38h1v1h-1zM2 38h1v1h-1zM3 38h1v1h-1zM4 38h1v1h-1zM6 38h1v1h-1zM8 38h1v1h-1zM9 38h1v1h-1zM15 38h1v1h-1zM16 38h1v1h-1zM19 38h1v1h-1zM21 38h1v1h-1zM23 38h1v1h-1zM24 38h1v1h-1zM26 38h1v1h-1zM27 38h1v1h-1zM30 38h1v1h-1zM32 38h1v1h-1zM33 38h1v1h-1zM36 38h1v1h-1zM37 38h1v1h-1zM38 38h1v1h-1zM40 38h1v1h-1zM0 39h1v1h-1zM6 39h1v1h-1zM10 39h1v1h-1zM12 39h1v1h-1zM13 39h1v1h-1zM15 39h1v1h-1zM16 39h1v1h-1zM23 39h1v1h-1zM24 39h1v1h-1zM26 39h1v1h-1zM30 39h1v1h-1zM32 39h1v1h-1zM33 39h1v1h-1zM34 39h1v1h-1zM37 39h1v1h-1zM0 40h1v1h-1zM1 40h1v1h-1zM2 40h1v1h-1zM3 40h1v1h-1zM4 40h1v1h-1zM5 40h1v1h-1zM6 40h1v1h-1zM8 40h1v1h-1zM10 40h1v1h-1zM17 40h1v1h-1zM19 40h1v1h-1zM20 40h1v1h-1zM24 40h1v1h-1zM32 40h1v1h-1zM33 40h1v1h-1zM36 40h1v1h-1zM40 40h1v1h-1z"/></svg>
+    <div><b>Desde otro equipo</b><p class="nota" style="margin-top:4px">Escanea este código con la cámara del celular para abrir esta página e instalar AI Toque.</p></div>
+  </section>
+  <section class="card">
+    <b>Antes de empezar</b>
+    <p class="nota" style="margin-top:6px">Es la versión de prueba con datos de ejemplo de LanAI Demo S.A.C. (empresa ficticia). Lo que registres queda guardado en ese celular o computadora y no tiene validez ante SUNAT.</p>
+  </section>
+</main>
+<script>
+(function () {
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(function () {});
+  var ua = navigator.userAgent, ios = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1), android = /android/i.test(ua);
+  var so = ios ? 'ios' : android ? 'android' : 'pc', pedido = null, btn = document.getElementById('instalar');
+  function ver(k) {
+    so = k;
+    [].forEach.call(document.querySelectorAll('[data-so]'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-so') === k)); });
+    [].forEach.call(document.querySelectorAll('[data-pasos]'), function (d) { d.hidden = d.getAttribute('data-pasos') !== k; });
+    btn.hidden = !(pedido && k !== 'ios');
+  }
+  [].forEach.call(document.querySelectorAll('[data-so]'), function (b) { b.onclick = function () { ver(b.getAttribute('data-so')); }; });
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); pedido = e; ver(so); });
+  btn.onclick = function () { if (!pedido) return; pedido.prompt(); pedido = null; ver(so); };
+  window.addEventListener('appinstalled', function () { document.getElementById('ok').style.display = 'block'; btn.hidden = true; });
+  if ((window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone) location.replace('FacturacionelectronicaLanAI.html');
+  ver(so);
+})();
+</script>
+</body>
+</html>
