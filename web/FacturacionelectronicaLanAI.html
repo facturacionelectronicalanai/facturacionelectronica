@@ -1744,7 +1744,7 @@ function vInicio() {
   return `
   ${bannerPruebaHTML()}${bannerLocalHTML()}
   ${!empresaLista(cfg) ? `<div class="banner"><div class="b-ic">${icon('building')}</div><div class="b-t"><b>Configura tu empresa para emitir comprobantes</b><span>RUC, razón social y dirección fiscal aparecen en cada factura y en el XML para SUNAT.</span></div><button class="btn primary" data-act="go" data-r="sunat">Configurar</button></div>` : ''}
-  <div class="page-head launch-head"><div><p class="sub">${saludo} · ${esc(cfg.empresa.comercial || cfg.empresa.razon || 'Tu empresa')}</p><h1>¿Qué quieres hacer?</h1></div><div class="row-gap"><span class="faint num hide-sm">${fmtDate(t)}</span><button class="btn" data-act="go" data-r="personalizar">${icon('brush', 'sm')}Personalizar documentos</button></div></div>
+  <div class="page-head launch-head"><div><p class="sub">${saludo} · ${esc(cfg.empresa.comercial || cfg.empresa.razon || 'Tu empresa')}</p><h1>¿Qué quieres hacer?</h1></div><div class="row-gap"><span class="faint num hide-sm">${fmtDate(t)}</span><button class="btn primary btn-instalar" data-act="instalar-app">${icon('download', 'sm')}Instalar app</button><button class="btn" data-act="go" data-r="personalizar">${icon('brush', 'sm')}Personalizar documentos</button></div></div>
   <div class="launch" role="navigation" aria-label="Acciones principales">
     <section class="tile cot">
       <button class="tile-main" data-act="new" data-tipo="COT" aria-label="Cotizar: crear una nueva cotización">
@@ -5333,41 +5333,66 @@ document.addEventListener('change', async ev => {
 </script>
 <script>
 /* ================= App instalable (PWA) =================
-   Registra el service worker y ofrece "Instalar app" una vez: botón en Android/PC (cuando el navegador lo permite)
-   y una indicación en iPhone (Compartir → Agregar a inicio). Si se descarta, no vuelve a aparecer en 30 días. */
+   Registra el service worker. El botón «Instalar app» de Inicio instala directo cuando el navegador lo permite
+   (Android/PC con Chrome o Edge) y, si no, explica los pasos (menú ⋮ en Android, Compartir en iPhone).
+   Además, un aviso flotante una vez; si se descarta, no vuelve en 30 días. Instalada, nada de esto se muestra. */
 (function () {
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(function () {});
-  var CLAVE = 'aitoque-instalar', instalada = window.matchMedia && matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-  if (instalada) return;
+  var css = document.createElement('style');
+  css.textContent = 'body.app-instalada .btn-instalar{display:none}'
+    + '.app-inst{position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:59;display:flex;align-items:center;gap:10px;max-width:min(360px,calc(100vw - 110px));padding:10px 12px;border-radius:var(--r-lg);background:var(--granate);color:#fff;box-shadow:var(--sh-3);font:500 var(--fs-sm)/1.35 var(--font)}'
+    + '.app-inst img{width:36px;height:36px;border-radius:9px;flex:none}.app-inst button{border:0;border-radius:var(--r-sm);padding:7px 11px;font:600 var(--fs-xs) var(--font);cursor:pointer}'
+    + '.app-inst .si{background:#fff;color:var(--granate)}.app-inst .no{background:none;color:#fff;opacity:.75;padding:4px 6px;font-size:1.1rem;line-height:1}'
+    + '@media (max-width:719px){.app-inst{bottom:calc(84px + env(safe-area-inset-bottom))}}@media print{.app-inst{display:none}}body.sin-sesion .app-inst{display:none}'
+    + '.pasos-inst{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px}.pasos-inst b{color:var(--granate)}';
+  document.head.appendChild(css);
+  var instalada = function () { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; };
+  var marcar = function () { document.body.classList.toggle('app-instalada', instalada()); };
+  marcar();
+  var aviso = null, pedido = null, CLAVE = 'aitoque-instalar';
+  var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var android = /android/i.test(navigator.userAgent);
   var leer = function () { try { return Number(localStorage.getItem(CLAVE)) || 0; } catch (e) { return 0; } };
   var guardar = function () { try { localStorage.setItem(CLAVE, String(Date.now())); } catch (e) {} };
-  if (Date.now() - leer() < 30 * 864e5) return;
-  var css = document.createElement('style');
-  css.textContent = '.app-inst{position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:59;display:flex;align-items:center;gap:10px;max-width:min(360px,calc(100vw - 110px));padding:10px 12px;border-radius:var(--r-lg);background:var(--granate);color:#fff;box-shadow:var(--sh-3);font:500 var(--fs-sm)/1.35 var(--font)}'
-    + '.app-inst img{width:36px;height:36px;border-radius:9px;flex:none}.app-inst button{border:0;border-radius:var(--r-sm);padding:7px 11px;font:600 var(--fs-xs) var(--font);cursor:pointer}'
-    + '.app-inst .si{background:#fff;color:var(--granate)}.app-inst .no{background:none;color:#fff;opacity:.75;padding:4px 6px;font-size:1.1rem;line-height:1}@media print{.app-inst{display:none}}body.sin-sesion .app-inst{display:none}';
-  document.head.appendChild(css);
-  function mostrar(texto, accion) {
-    var b = document.createElement('div'); b.className = 'app-inst'; b.setAttribute('role', 'status');
+  var quitarAviso = function () { if (aviso) { aviso.remove(); aviso = null; } };
+  function pasos() {
+    var lista = ios
+      ? ['Abre esta página en <b>Safari</b>.', 'Toca el botón <b>Compartir</b> (el cuadrado con la flecha hacia arriba).', 'Elige <b>Agregar a inicio</b> y luego <b>Agregar</b>.']
+      : android
+        ? ['Abre esta página en <b>Chrome</b>.', 'Toca el menú <b>⋮</b> (arriba a la derecha).', 'Elige <b>Instalar app</b> o <b>Agregar a la pantalla principal</b> y confirma.']
+        : ['Abre esta página en <b>Chrome</b> o <b>Edge</b>.', 'Haz clic en el ícono de <b>instalar</b> al final de la barra de direcciones (o en el menú ⋮ → <b>Instalar AI Toque</b>).', 'Confirma con <b>Instalar</b>.'];
+    var html = '<div class="modal-h"><h2>Instala AI Toque</h2><button class="btn ghost icon-only" data-act="modal-close" aria-label="Cerrar">×</button></div>'
+      + '<div class="modal-b"><p class="muted" style="margin-top:0">Quedará un ícono en tu ' + (ios || android ? 'celular' : 'computadora') + ' y se abrirá como una app, sin la barra del navegador.</p><ol class="pasos-inst">'
+      + lista.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ol></div>'
+      + '<div class="modal-f"><button class="btn primary" data-act="modal-close">Entendido</button></div>';
+    if (typeof openModal === 'function') openModal(html); else alert(lista.join('\n').replace(/<[^>]+>/g, ''));
+  }
+  function instalar() {
+    quitarAviso();
+    if (pedido) {
+      var p = pedido; pedido = null; p.prompt();
+      if (p.userChoice) p.userChoice.then(function (r) { if (!r || r.outcome !== 'accepted') guardar(); });
+    } else pasos();
+  }
+  try { if (typeof ACT === 'object' && ACT) ACT['instalar-app'] = function () { instalar(); }; } catch (e) {}
+  function mostrarAviso(texto, conBoton) {
+    if (aviso || instalada() || Date.now() - leer() < 30 * 864e5) return;
+    var b = aviso = document.createElement('div'); b.className = 'app-inst'; b.setAttribute('role', 'status');
     var ic = document.createElement('img'); ic.src = 'icono-192.png'; ic.alt = '';
     var t = document.createElement('span'); t.textContent = texto;
     var no = document.createElement('button'); no.className = 'no'; no.type = 'button'; no.textContent = '×'; no.setAttribute('aria-label', 'Ahora no');
-    no.onclick = function () { guardar(); b.remove(); };
+    no.onclick = function () { guardar(); quitarAviso(); };
     b.appendChild(ic); b.appendChild(t);
-    if (accion) { var si = document.createElement('button'); si.className = 'si'; si.type = 'button'; si.textContent = 'Instalar'; si.onclick = function () { b.remove(); accion(); }; b.appendChild(si); }
+    if (conBoton) { var si = document.createElement('button'); si.className = 'si'; si.type = 'button'; si.textContent = 'Instalar'; si.onclick = instalar; b.appendChild(si); }
     b.appendChild(no); document.body.appendChild(b);
   }
   window.addEventListener('beforeinstallprompt', function (e) {
-    e.preventDefault();
-    setTimeout(function () {
-      mostrar('Instala AI Toque en tu celular o PC y ábrela como una app.', function () {
-        e.prompt(); if (e.userChoice) e.userChoice.then(function (r) { if (r && r.outcome !== 'accepted') guardar(); });
-      });
-    }, 20e3);
+    e.preventDefault(); pedido = e;
+    setTimeout(function () { if (pedido) mostrarAviso('Instala AI Toque en tu ' + (android ? 'celular' : 'equipo') + ' y ábrela como una app.', true); }, 8e3);
   });
-  var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !/crios|fxios|edgios/i.test(navigator.userAgent);
-  if (ios) setTimeout(function () { mostrar('Para instalar AI Toque: toca Compartir y luego «Agregar a inicio».'); }, 20e3);
-  window.addEventListener('appinstalled', function () { guardar(); var b = document.querySelector('.app-inst'); if (b) b.remove(); });
+  if (ios && !instalada()) setTimeout(function () { mostrarAviso('Para instalar AI Toque: toca Compartir y luego «Agregar a inicio».', false); }, 15e3);
+  window.addEventListener('appinstalled', function () { guardar(); pedido = null; quitarAviso(); document.body.classList.add('app-instalada'); });
+  if (window.matchMedia) { var mq = matchMedia('(display-mode: standalone)'); if (mq.addEventListener) mq.addEventListener('change', marcar); }
 })();
 </script>
 </body>
