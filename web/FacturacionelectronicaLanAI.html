@@ -750,6 +750,13 @@ body.con-abar .wa-fab{bottom:calc(92px + env(safe-area-inset-bottom))}
 .wa-fab-txt{display:none}.wa-fab:hover .wa-fab-txt,.wa-fab:focus-visible .wa-fab-txt{display:inline}
 #main{padding-bottom:88px}
 @media print{.wa-fab{display:none}}
+/* Botón × para cerrar los flotantes (WhatsApp y LanAI): solo en celular */
+.fab-x{display:none}
+@media (max-width:719px){
+  .fab-x{display:flex;align-items:center;justify-content:center;position:absolute;top:-7px;left:-7px;width:22px;height:22px;border-radius:50%;background:#fff;color:#3a3a3a;border:1px solid rgba(0,0,0,.14);box-shadow:0 2px 6px rgba(0,0,0,.22);font:600 14px/1 var(--font);cursor:pointer;z-index:1;touch-action:manipulation}
+  .fab-x::before{content:'';position:absolute;inset:-9px}
+  body.sin-fab-whatsapp .wa-fab,body.sin-fab-lanai .la-btn,body.sin-fab-lanai .la-tip{display:none!important}
+}
 /* reporte rápido en Comprobantes */
 .rq-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}
 @media (max-width:1100px){.rq-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -4150,7 +4157,7 @@ function pintarWaFab() {
     a.setAttribute('aria-label', 'Soporte por WhatsApp'); a.title = 'Soporte por WhatsApp · mantén presionado y arrastra para moverlo'; a.draggable = false;
     a.innerHTML = `<svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M16.04 3C8.86 3 3.04 8.82 3.04 16c0 2.3.6 4.53 1.74 6.5L3 29l6.68-1.75A12.94 12.94 0 0 0 16.04 29C23.22 29 29.04 23.18 29.04 16S23.22 3 16.04 3Zm0 23.62c-2 0-3.95-.54-5.66-1.56l-.4-.24-3.97 1.04 1.06-3.87-.26-.4A10.6 10.6 0 0 1 5.42 16c0-5.86 4.76-10.62 10.62-10.62S26.66 10.14 26.66 16 21.9 26.62 16.04 26.62Zm5.83-7.95c-.32-.16-1.88-.93-2.17-1.03-.29-.11-.5-.16-.71.16-.21.32-.82 1.03-1 1.24-.18.21-.37.24-.69.08-.32-.16-1.34-.49-2.55-1.57-.94-.84-1.58-1.88-1.76-2.2-.18-.32-.02-.49.14-.65.14-.14.32-.37.48-.56.16-.18.21-.32.32-.53.11-.21.05-.4-.03-.56-.08-.16-.71-1.71-.97-2.34-.26-.62-.52-.53-.71-.54h-.61c-.21 0-.56.08-.85.4-.29.32-1.11 1.09-1.11 2.65s1.14 3.08 1.3 3.29c.16.21 2.24 3.42 5.43 4.8.76.33 1.35.52 1.81.67.76.24 1.45.21 2 .13.61-.09 1.88-.77 2.14-1.51.27-.74.27-1.38.19-1.51-.08-.13-.29-.21-.61-.37Z"/></svg><span class="wa-fab-txt">Soporte</span>`;
     document.body.appendChild(a);
-    hacerArrastrable(a, 'whatsapp');
+    hacerArrastrable(a, 'whatsapp'); cerrableEnCelular(a, 'whatsapp', 'Ocultar el botón de WhatsApp');
   }
   a.href = url;
   document.body.classList.toggle('con-abar', UI.route === 'editor');
@@ -4166,6 +4173,23 @@ function posFab(el, clave) {
   const r = el.getBoundingClientRect(), m = 10, vw = innerWidth, vh = innerHeight;
   const x = p.lado === 'izq' ? m : vw - r.width - m, y = Math.min(Math.max(m, p.ry * (vh - r.height)), vh - r.height - m);
   Object.assign(el.style, { left: `${x}px`, top: `${y}px`, right: 'auto', bottom: 'auto' }); el.classList.add('movido');
+}
+/* × para ocultar un botón flotante en el celular. Queda oculto mientras la app o la pestaña siga abierta;
+   al volver a abrirla, reaparece. */
+function cerrableEnCelular(el, clave, etiqueta) {
+  if (el.querySelector('.fab-x')) return;
+  const cls = 'sin-fab-' + clave;
+  try { if (sessionStorage.getItem(cls)) document.body.classList.add(cls); } catch { /* */ }
+  const x = document.createElement('span'); x.className = 'fab-x'; x.textContent = '×';
+  x.setAttribute('role', 'button'); x.setAttribute('tabindex', '0'); x.setAttribute('aria-label', etiqueta); x.title = etiqueta;
+  const ocultar = ev => { ev.preventDefault(); ev.stopPropagation(); document.body.classList.add(cls); try { sessionStorage.setItem(cls, '1'); } catch { /* */ } };
+  x.addEventListener('pointerdown', ev => ev.stopPropagation());
+  /* En pantallas táctiles el navegador puede mandar el «click» al botón padre (y abrir WhatsApp o LanAI):
+     se oculta al levantar el dedo y se anula ese click. */
+  x.addEventListener('pointerup', ev => { el._sinClick = Date.now(); ocultar(ev); });
+  x.addEventListener('click', ocultar);
+  x.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') ocultar(ev); });
+  el.appendChild(x);
 }
 function hacerArrastrable(el, clave) {
   if (el._arrastrable) return; el._arrastrable = true;
@@ -5030,6 +5054,7 @@ document.addEventListener('change', async ev => {
   document.body.appendChild(panel); document.body.appendChild(btn);
   btn.title = 'LanAI · mantén presionado y arrastra para moverla';
   if (typeof hacerArrastrable === 'function') hacerArrastrable(btn, 'lanai');
+  if (typeof cerrableEnCelular === 'function') cerrableEnCelular(btn, 'lanai', 'Ocultar a LanAI');
   /* Si LanAI fue movida, el panel se abre junto a ella (arriba o abajo, izquierda o derecha) */
   function ubicarPanel() {
     var S = panel.style;
@@ -5314,7 +5339,7 @@ document.addEventListener('change', async ev => {
     tipTimer = setTimeout(quitarConsejo, 25e3);
   }
   function tocaConsejo() {
-    if (!panel.hidden || tip || document.hidden || document.body.classList.contains('sin-sesion')) return;
+    if (!panel.hidden || tip || document.hidden || document.body.classList.contains('sin-sesion') || (document.body.classList.contains('sin-fab-lanai') && window.innerWidth < 720)) return;
     var st = leerConsejos(), hoy = hoyISO(), ahora = Date.now();
     if (st.pausa === hoy) return;
     if (st.dia !== hoy) { st.dia = hoy; st.n = 0; }
